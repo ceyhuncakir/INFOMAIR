@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from tqdm import tqdm
 import pandas as pd
+import gensim
 
 from base import Base
 from helpers.evaluation import Evaluate
@@ -76,8 +77,8 @@ class MultiLayerPerceptron(Base):
 
     def _train(
         self,
-        train_set,
-        val_set
+        train_set: pd.DataFrame,
+        val_set: pd.DataFrame
     ) -> MLP:
 
         train_dataset = MLPDataset(df=train_set)
@@ -98,7 +99,7 @@ class MultiLayerPerceptron(Base):
 
             running_train_correct, running_train_loss, running_val_loss, running_val_correct = 0, 0, 0, 0
 
-            for batch in tqdm(train_dataloader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False):
+            for batch in tqdm(train_dataloader, desc=f"Train Epoch {epoch + 1}/{epochs}", leave=False):
                 
                 inputs, labels = batch['inputs'].to("cuda"), batch['labels'].to("cuda")
 
@@ -122,7 +123,7 @@ class MultiLayerPerceptron(Base):
             model.eval()
 
             with torch.no_grad():
-                for batch in val_dataloader:
+                for batch in tqdm(val_dataloader, desc=f"Val Epoch {epoch + 1}/{epochs}", leave=False):
                 
                     inputs, labels = batch['inputs'].to("cuda"), batch['labels'].to("cuda")
 
@@ -149,8 +150,8 @@ class MultiLayerPerceptron(Base):
 
     def _evaluate_model(
         self,
-        model,
-        test_set
+        model: MLP,
+        test_set: pd.DataFrame
     ) -> pd.DataFrame:
         
         test_dataset = MLPDataset(df=test_set)
@@ -178,15 +179,15 @@ class MultiLayerPerceptron(Base):
             
     def _load_doc2vec(
         self
-    ) -> None:
+    ) -> gensim.models.doc2vec.Doc2Vec:
         
         return Doc2Vec.load(self._doc2vec_data_dir_path)
     
     def _generate_embeddings(
         self,
         data: list[pd.DataFrame, ...],
-        model
-    ) -> None:
+        model: gensim.models.doc2vec.Doc2Vec
+    ) -> list[pd.DataFrame, ...]:
         
         for datasets in data:
             
@@ -221,9 +222,14 @@ class MultiLayerPerceptron(Base):
 
         train, model_test = self._split_train_test(df=df)
 
-        model_test["y_true"] = model_test['act'].apply(lambda x: labels.index(x))
+        model_test["y_true"] = model_test['act'].apply(
+            lambda x: labels.index(x)
+        )
 
-        model_train, model_validation = self._split_train(df=train, labels=labels)
+        model_train, model_validation = self._split_train(
+            df=train, 
+            labels=labels
+        )
 
         doc2vec = self._load_doc2vec()
 
