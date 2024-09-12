@@ -121,7 +121,6 @@ class Evaluate:
         accuracy: {accuracy}
         
         confusion matrix:\n {confusion_matrix}
-
         """
 
         print(results)

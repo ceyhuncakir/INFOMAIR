@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+typer = "*"
+gensim = "*"
+scikit-learn = "*"
+pandas = "*"
+xgboost = "*"
+torch = "*"
+torchvision = "*"
+torchaudio = "*"
+tqdm = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
+
+[scripts]
+infomair_a1 = "python3 1a/src/main.py"

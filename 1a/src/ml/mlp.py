@@ -11,9 +11,12 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 import pandas as pd
 import gensim
+import typer
 
-from base import Base
+from helpers.base import Base
 from helpers.evaluation import Evaluate
+
+mlp_app = typer.Typer()
 
 class MLP(nn.Module):
     def __init__(
@@ -258,6 +261,17 @@ class MultiLayerPerceptron(Base):
             labels=labels
         ).run()
 
+@mlp_app.command()
+def inference(
+
+) -> None:
+    pass
+
+@mlp_app.command()
+def evaluate(
+
+) -> None:
+    pass
 
         
 

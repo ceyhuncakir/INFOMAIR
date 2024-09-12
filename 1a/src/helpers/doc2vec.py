@@ -1,8 +1,8 @@
 import os
 
+import gensim
 from gensim.test.utils import datapath
 from gensim.corpora import WikiCorpus
-import gensim
 
 class Doc2vec:
     def __init__(
@@ -94,6 +94,6 @@ class Doc2vec:
 
 if __name__ == "__main__":
     doc2vec = Doc2vec(
-        data_dump_data_dir="/home/x7a/Documents/Github/INFOMAIR/1a/data/wikipedia",
-        checkpoint_data_dir="/home/x7a/Documents/Github/INFOMAIR/1a/data/gensim/doc2vec.model"
+        data_dump_data_dir="/Users/ceyhuncakir/Documents/github/INFOMAIR/1a/data/wikipedia",
+        checkpoint_data_dir="/Users/ceyhuncakir/Documents/github/INFOMAIR/1a/gensim/doc2vec.model"
     ).run()

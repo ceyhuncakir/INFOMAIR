@@ -5,9 +5,12 @@ import pandas as pd
 import xgboost as xgb
 from gensim.models.doc2vec import Doc2Vec
 import numpy as np
+import typer
 
-from base import Base
+from helpers.base import Base
 from helpers.evaluation import Evaluate
+
+xgboost_app = typer.Typer()
 
 class Xgboost(Base):
     def __init__(
@@ -144,8 +147,15 @@ class Xgboost(Base):
             labels=labels
         ).run()
 
+@xgboost_app.command()
+def inference(
 
+) -> None:
+    pass
 
+@xgboost_app.command()
+def evaluate(
 
-
+) -> None:
+    pass
 
