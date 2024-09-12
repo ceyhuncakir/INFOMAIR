@@ -1,5 +1,6 @@
 from typing import List
 
+import numpy as np
 import pandas as pd
 from sklearn.metrics import (
     precision_score,
@@ -31,7 +32,7 @@ class Evaluate:
         return precision_score(
             y_true=y_true, 
             y_pred=y_pred,
-            average="micro"
+            average="micro",
         )
 
     def _recall(
@@ -43,7 +44,7 @@ class Evaluate:
         return recall_score(
             y_true=y_true,
             y_pred=y_pred,
-            average="micro"
+            average="micro",
         )
     
     def _f1_score(
@@ -55,7 +56,7 @@ class Evaluate:
         return f1_score(
             y_pred=y_pred,
             y_true=y_true,
-            average="micro"
+            average="micro",
         )
     
     def _accuracy(
@@ -75,7 +76,12 @@ class Evaluate:
         y_true: pd.Series
     ) -> None:
         
-        return classification_report(y_true, y_pred, target_names=self._labels)
+        return classification_report(
+            y_true, 
+            y_pred, 
+            target_names=self._labels, 
+            zero_division=0
+        )
     
     def run(
         self
