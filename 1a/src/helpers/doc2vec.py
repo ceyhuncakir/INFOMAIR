@@ -3,6 +3,10 @@ import os
 import gensim
 from gensim.test.utils import datapath
 from gensim.corpora import WikiCorpus
+import typer
+from typing_extensions import Annotated
+
+doc2vec_app = typer.Typer()
 
 class Doc2vec:
     def __init__(
@@ -21,7 +25,7 @@ class Doc2vec:
         dump_collection = []
         
         for files in os.listdir(self._dataset_dir_path):
-
+            
             wiki = WikiCorpus(
                 self._dataset_dir_path + "/" + files, 
                 lower=True, 
@@ -91,9 +95,13 @@ class Doc2vec:
         model = self._train_model(data=data)
         self._save_model(model=model)
 
+@doc2vec_app.command()
+def train(
+    data_dump_data_dir: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
+    checkpoint_data_dir: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
+) -> None:
 
-if __name__ == "__main__":
     doc2vec = Doc2vec(
-        data_dump_data_dir="/Users/ceyhuncakir/Documents/github/INFOMAIR/1a/data/wikipedia",
-        checkpoint_data_dir="/Users/ceyhuncakir/Documents/github/INFOMAIR/1a/gensim/doc2vec.model"
+        data_dump_data_dir=data_dump_data_dir,
+        checkpoint_data_dir=checkpoint_data_dir
     ).run()
