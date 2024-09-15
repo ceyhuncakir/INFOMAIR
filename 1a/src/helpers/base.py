@@ -2,6 +2,7 @@ from typing import Tuple, List
 
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from loguru import logger
 
 from helpers.evaluation import Evaluate
 
@@ -20,6 +21,7 @@ class Base:
         
         self._dataset_dir_path = dataset_dir_path
 
+    @logger.catch
     def _load_data(
         self
     ) -> pd.DataFrame:
@@ -30,6 +32,7 @@ class Base:
             names=['data']
         )
 
+    @logger.catch
     def _get_features(
         self,
         row: str
@@ -41,6 +44,7 @@ class Base:
         
         return pd.Series([act, utterance])
 
+    @logger.catch
     def set_columns(
         self,
         df: pd.DataFrame
@@ -52,17 +56,23 @@ class Base:
 
         return df
 
+    @logger.catch
     def _preprocess(
         self, 
-        df: pd.DataFrame
+        df: pd.DataFrame,
+        deduplication: bool = False
     ) -> pd.DataFrame:
 
         df['act'] = df['act'].str.lower()
         df['utterance'] = df['utterance'].str.lower()
         df['utterance'] = df['utterance'].str.lstrip()
         
+        if deduplication:
+            df = df.drop_duplicates(subset=['utterance'])
+        
         return df
 
+    @logger.catch
     def _get_labels(
         self,
         df: pd.DataFrame
@@ -70,6 +80,7 @@ class Base:
         
         return list(df['act'].unique())
 
+    @logger.catch
     def _split_train_test(
         self,
         df: pd.DataFrame
@@ -83,6 +94,7 @@ class Base:
 
         return train, test
 
+    @logger.catch
     def process(
         self
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:

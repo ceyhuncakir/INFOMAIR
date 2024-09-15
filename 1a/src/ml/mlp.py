@@ -208,8 +208,6 @@ class MultiLayerPerceptron(Base):
 
         embeddings = torch.tensor(embeddings)
 
-        print(embeddings)
-
         with torch.no_grad():
 
             output = model(embeddings)

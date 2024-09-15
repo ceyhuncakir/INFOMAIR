@@ -1,10 +1,10 @@
 import typer
 
-from baselines.baseline_1 import Baseline_1, baseline_1_app
-from baselines.baseline_2 import Baseline_2, baseline_2_app
-from ml.xgboost import Xgboost, xgboost_app
-from ml.mlp import MultiLayerPerceptron, mlp_app
-from helpers.doc2vec import Doc2vec, doc2vec_app
+from baselines.baseline_1 import baseline_1_app
+from baselines.baseline_2 import baseline_2_app
+from ml.xgboost import xgboost_app
+from ml.mlp import mlp_app
+from helpers.doc2vec import doc2vec_app
 
 app = typer.Typer()
 app.add_typer(baseline_1_app, name="baseline_1", help="Manages the baseline 1 implementation")
