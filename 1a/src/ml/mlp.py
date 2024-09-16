@@ -1,3 +1,4 @@
+import os
 from typing import Tuple, List
 
 import torch.nn as nn
@@ -232,34 +233,6 @@ class MultiLayerPerceptron(Base):
         return test_set
 
     @logger.catch
-    def inference(
-        self,
-        text: str
-    ) -> None:
-        """
-        This function is needed to do inference.
-
-        Args:
-            text (str): A text defining the utterance
-
-        Returns:
-            None
-        """
-
-        device = self._device
-        model = self._load_mlp()
-
-        embeddings = self.doc2vec.infer_vector(text.split())
-
-        embeddings = torch.tensor(embeddings)
-
-        with torch.no_grad():
-
-            output = model(embeddings)
-
-            print(f"""act: {torch.argmax(output.cpu().item())}\n""")
-
-    @logger.catch
     def _save_model(
         self,
         model: MLP
@@ -274,7 +247,8 @@ class MultiLayerPerceptron(Base):
             None
         """
         
-        torch.save(model.state_dict(), self._checkpoint_dir_path + "/" + "model.pth")
+        os.makedirs(self._checkpoint_dir_path + "/" + self._experiment_name, exist_ok=True)
+        torch.save(model.state_dict(), self._checkpoint_dir_path + "/" + self._experiment_name + "/" + "model.pth")
 
     @logger.catch      
     def _load_doc2vec(
@@ -307,7 +281,7 @@ class MultiLayerPerceptron(Base):
         """
         
         model = MLP(feature_shape=self.doc2vec.vector_size, num_classes=len(self.labels)).to(self._device)
-        model.load_state_dict(torch.load(self._checkpoint_dir_path + "/model.pth", weights_only=True))
+        model.load_state_dict(torch.load(self._checkpoint_dir_path + "/" + self._experiment_name + "/" + "model.pth", weights_only=True))
         model.eval()
         
         return model
@@ -362,6 +336,34 @@ class MultiLayerPerceptron(Base):
         return train, validation
 
     @logger.catch
+    def inference(
+        self,
+        text: str
+    ) -> None:
+        """
+        This function is needed to do inference.
+
+        Args:
+            text (str): A text defining the utterance
+
+        Returns:
+            None
+        """
+
+        device = self._device
+        model = self._load_mlp()
+
+        embeddings = self.doc2vec.infer_vector(text.split())
+
+        embeddings = torch.tensor(embeddings.reshape(1, -1))
+
+        with torch.no_grad():
+
+            output = model(embeddings)
+
+            print(f"""act: {self.labels[torch.argmax(output, dim=1).item()]}\n""")
+
+    @logger.catch
     def evaluate(
         self
     ) -> None:
@@ -375,7 +377,18 @@ class MultiLayerPerceptron(Base):
             None
         """
 
-        model = self._load_model()
+        model = self._load_mlp()
+
+        self.model_test["y_true"] = self.model_test['act'].apply(
+            lambda x: self.labels.index(x)
+        )
+
+        data = self._generate_embeddings(
+            data=[self.model_test],
+            model=self.doc2vec
+        )  
+
+        model_test = pd.concat([data[0], pd.get_dummies(data[0]['y_true'])], axis=1)
 
         results = self._evaluate_model(
             model=model,
@@ -404,24 +417,19 @@ class MultiLayerPerceptron(Base):
             None
         """
 
-        self.model_test["y_true"] = self.model_test['act'].apply(
-            lambda x: self.labels.index(x)
-        )
-
-        model_train, model_validation = self._split_train(
+        model_train, _ = self._split_train(
             df=self.train, 
             labels=self.labels
         )
 
-        model_train, model_validation, model_test = self._generate_embeddings(
-            data=[model_train, model_validation, self.model_test],
+        model_train, model_validation = self._generate_embeddings(
+            data=[model_train, model_validation],
             model=self.doc2vec
         )  
 
         model_train = pd.concat([model_train, pd.get_dummies(model_train['y_true'])], axis=1)
         model_validation = pd.concat([model_validation, pd.get_dummies(model_validation['y_true'])], axis=1)
-        model_test = pd.concat([model_test, pd.get_dummies(model_test['y_true'])], axis=1)
-       
+
         model = self._train(
             train_set=model_train,
             val_set=model_validation,
