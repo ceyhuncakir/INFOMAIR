@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from tqdm import tqdm
 import pandas as pd
+from loguru import logger
 import gensim
 import typer
 from typing_extensions import Annotated
@@ -74,19 +75,23 @@ class MultiLayerPerceptron(Base):
         self,
         dataset_dir_path: str,
         doc2vec_data_dir_path: str,
-        checkpoint_dir_path: str
+        checkpoint_dir_path: str,
+        device: str
     ) -> None:
         
         self._dataset_dir_path = dataset_dir_path
         self._doc2vec_data_dir_path = doc2vec_data_dir_path
         self._checkpoint_dir_path = checkpoint_dir_path
+        self._device = device
 
         self.df = self._load_data()
         self.df = self.set_columns(df=self.df)
         self.df = self._preprocess(df=self.df)
         self.labels = self._get_labels(df=self.df)
         self.train, self.model_test = self._split_train_test(df=self.df)
+        self.doc2vec = self._load_doc2vec()
 
+    @logger.catch
     def _train(
         self,
         train_set: pd.DataFrame,
@@ -98,10 +103,9 @@ class MultiLayerPerceptron(Base):
 
         train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
         val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=True)
+        device = self._device
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        model = MLP(feature_shape=300, num_classes=15).to(device)
+        model = MLP(feature_shape=300, num_classes=len(self.labels)).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         loss_fn = torch.nn.BCELoss()
 
@@ -162,6 +166,7 @@ class MultiLayerPerceptron(Base):
 
         return model
 
+    @logger.catch
     def _evaluate_model(
         self,
         model: MLP,
@@ -172,7 +177,7 @@ class MultiLayerPerceptron(Base):
 
         test_dataloader = DataLoader(test_dataset, batch_size=128, shuffle=False)
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = self._device
 
         model.eval()
 
@@ -193,18 +198,16 @@ class MultiLayerPerceptron(Base):
 
         return test_set
 
+    @logger.catch
     def inference(
         self,
         text: str
     ) -> None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        doc2vec = self._load_doc2vec()
 
-        model = MLP(feature_shape=300, num_classes=15).to(device)
-        model.load_state_dict(torch.load(self._checkpoint_dir_path + "/model.pth", weights_only=True))
-        model.eval()
+        device = self._device
+        model = self._load_mlp()
 
-        embeddings = doc2vec.infer_vector(text.split())
+        embeddings = self.doc2vec.infer_vector(text.split())
 
         embeddings = torch.tensor(embeddings)
 
@@ -214,19 +217,33 @@ class MultiLayerPerceptron(Base):
 
             print(f"""act: {torch.argmax(output.cpu().item())}\n""")
 
+    @logger.catch
     def _save_model(
         self,
         model: MLP
     ) -> None:
         
         torch.save(model.state_dict(), self._checkpoint_dir_path + "/" + "model.pth")
-            
+
+    @logger.catch      
     def _load_doc2vec(
         self
     ) -> gensim.models.doc2vec.Doc2Vec:
         
         return Doc2Vec.load(self._doc2vec_data_dir_path)
+
+    @logger.catch
+    def _load_mlp(
+        self
+    ) -> None:
+        
+        model = MLP(feature_shape=300, num_classes=len(self.labels)).to(self._device)
+        model.load_state_dict(torch.load(self._checkpoint_dir_path + "/model.pth", weights_only=True))
+        model.eval()
+        
+        return model
     
+    @logger.catch
     def _generate_embeddings(
         self,
         data: list[pd.DataFrame, ...],
@@ -241,6 +258,7 @@ class MultiLayerPerceptron(Base):
 
         return data
 
+    @logger.catch
     def _split_train(
         self,
         df: pd.DataFrame,
@@ -254,6 +272,25 @@ class MultiLayerPerceptron(Base):
 
         return train, validation
 
+    @logger.catch
+    def evaluate(
+        self
+    ) -> None:
+
+        model = self._load_model()
+
+        results = self._evaluate_model(
+            model=model,
+            test_set=model_test
+        )
+
+        Evaluate(
+            experiment="multi layer perceptron",
+            dataframe=results,
+            labels=self.labels
+        ).run()
+
+    @logger.catch
     def run(
         self
     ) -> None:
@@ -267,11 +304,9 @@ class MultiLayerPerceptron(Base):
             labels=self.labels
         )
 
-        doc2vec = self._load_doc2vec()
-
         model_train, model_validation, model_test = self._generate_embeddings(
             data=[model_train, model_validation, self.model_test],
-            model=doc2vec
+            model=self.doc2vec
         )  
 
         model_train = pd.concat([model_train, pd.get_dummies(model_train['y_true'])], axis=1)
@@ -287,28 +322,19 @@ class MultiLayerPerceptron(Base):
             model=model
         )
 
-        results = self._evaluate_model(
-            model=model,
-            test_set=model_test
-        )
-
-        Evaluate(
-            experiment="multi layer perceptron",
-            dataframe=results,
-            labels=self.labels
-        ).run()
-
 @mlp_app.command()
 def inference(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
 ) -> None:
 
     mlp = MultiLayerPerceptron(
         dataset_dir_path = dataset_dir_path,
         doc2vec_data_dir_path = doc2vec_data_dir_path,
-        checkpoint_dir_path=checkpoint_dir_path
+        checkpoint_dir_path=checkpoint_dir_path,
+        device=device
     )
 
     while True:
@@ -322,13 +348,33 @@ def evaluate(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+) -> None:
+    
+    MultiLayerPerceptron(
+        dataset_dir_path = dataset_dir_path,
+        doc2vec_data_dir_path = doc2vec_data_dir_path,
+        checkpoint_dir_path=checkpoint_dir_path,
+        device=device
+    ).evaluate()
+
+@mlp_app.command()
+def train(
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
+    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    eta: Annotated[float, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    batch_size: Annotated[int, typer.Option(help="Checkpoint directory path for the mlp")] = None,
 ) -> None:
     
     MultiLayerPerceptron(
         dataset_dir_path = dataset_dir_path,
         doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path
-    ).run()
-
+    ).run(
+        eta=eta,
+        batch_size=batch_size
+    )
         
 
