@@ -28,9 +28,9 @@ class MLP(nn.Module):
     ) -> None:
         super().__init__()
 
-        self.linear1 = nn.Linear(in_features=feature_shape, out_features=128)
+        self.linear1 = nn.Linear(in_features=feature_shape, out_features=64)
         self.relu = nn.ReLU()
-        self.linear2 = nn.Linear(in_features=128, out_features=num_classes)
+        self.linear2 = nn.Linear(in_features=64, out_features=num_classes)
         self.flatten = nn.Flatten()
         self.softmax = nn.Softmax(dim=1)
 
@@ -85,12 +85,14 @@ class MultiLayerPerceptron(Base):
         dataset_dir_path: str,
         doc2vec_data_dir_path: str,
         checkpoint_dir_path: str,
+        experiment_name: str,
         device: str
     ) -> None:
         
         self._dataset_dir_path = dataset_dir_path
         self._doc2vec_data_dir_path = doc2vec_data_dir_path
         self._checkpoint_dir_path = checkpoint_dir_path
+        self._experiment_name = experiment_name
         self._device = device
 
         self.df = self._load_data()
@@ -104,7 +106,9 @@ class MultiLayerPerceptron(Base):
     def _train(
         self,
         train_set: pd.DataFrame,
-        val_set: pd.DataFrame
+        val_set: pd.DataFrame,
+        eta: float,
+        batch_size: int
     ) -> MLP:
         """
         This function is needed to train the MLP model.
@@ -120,12 +124,12 @@ class MultiLayerPerceptron(Base):
         train_dataset = MLPDataset(df=train_set)
         val_dataset = MLPDataset(df=val_set)
 
-        train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-        val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
         device = self._device
 
-        model = MLP(feature_shape=300, num_classes=len(self.labels)).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        model = MLP(feature_shape=self.doc2vec.vector_size, num_classes=len(self.labels)).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=eta)
         loss_fn = torch.nn.BCELoss()
 
         epochs = 5
@@ -302,7 +306,7 @@ class MultiLayerPerceptron(Base):
             None
         """
         
-        model = MLP(feature_shape=300, num_classes=len(self.labels)).to(self._device)
+        model = MLP(feature_shape=self.doc2vec.vector_size, num_classes=len(self.labels)).to(self._device)
         model.load_state_dict(torch.load(self._checkpoint_dir_path + "/model.pth", weights_only=True))
         model.eval()
         
@@ -386,7 +390,9 @@ class MultiLayerPerceptron(Base):
 
     @logger.catch
     def run(
-        self
+        self,
+        eta: float,
+        batch_size: int
     ) -> None:
         """
         This function is being used as the main functionality for training the MLP model.
@@ -418,7 +424,9 @@ class MultiLayerPerceptron(Base):
        
         model = self._train(
             train_set=model_train,
-            val_set=model_validation
+            val_set=model_validation,
+            eta=eta,
+            batch_size=batch_size
         )
 
         self._save_model(
@@ -430,6 +438,7 @@ def inference(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    experiment_name: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
 ) -> None:
 
@@ -437,6 +446,7 @@ def inference(
         dataset_dir_path = dataset_dir_path,
         doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
+        experiment_name=experiment_name,
         device=device
     )
 
@@ -451,6 +461,7 @@ def evaluate(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    experiment_name: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
 ) -> None:
     
@@ -458,6 +469,7 @@ def evaluate(
         dataset_dir_path = dataset_dir_path,
         doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
+        experiment_name=experiment_name,
         device=device
     ).evaluate()
 
@@ -466,6 +478,7 @@ def train(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    experiment_name: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     eta: Annotated[float, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     batch_size: Annotated[int, typer.Option(help="Checkpoint directory path for the mlp")] = None,
@@ -474,7 +487,9 @@ def train(
     MultiLayerPerceptron(
         dataset_dir_path = dataset_dir_path,
         doc2vec_data_dir_path = doc2vec_data_dir_path,
-        checkpoint_dir_path=checkpoint_dir_path
+        checkpoint_dir_path=checkpoint_dir_path,
+        experiment_name=experiment_name,
+        device=device
     ).run(
         eta=eta,
         batch_size=batch_size
