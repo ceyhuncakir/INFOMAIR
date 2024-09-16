@@ -109,7 +109,8 @@ class MultiLayerPerceptron(Base):
         train_set: pd.DataFrame,
         val_set: pd.DataFrame,
         eta: float,
-        batch_size: int
+        batch_size: int,
+        epochs: int
     ) -> MLP:
         """
         This function is needed to train the MLP model.
@@ -132,8 +133,6 @@ class MultiLayerPerceptron(Base):
         model = MLP(feature_shape=self.doc2vec.vector_size, num_classes=len(self.labels)).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=eta)
         loss_fn = torch.nn.BCELoss()
-
-        epochs = 5
 
         for epoch in range(epochs):
 
@@ -182,6 +181,7 @@ class MultiLayerPerceptron(Base):
                 mean_val_accuracy = running_val_correct / len(val_dataloader)
 
             print(f"""
+            Epoch {epoch + 1}/{epochs},
             Train Loss: {mean_train_loss:.4f}, 
             Train Acc: {mean_train_accuracy:.4f}, 
             Val Loss: {mean_val_loss:.4f}, 
@@ -405,7 +405,8 @@ class MultiLayerPerceptron(Base):
     def run(
         self,
         eta: float,
-        batch_size: int
+        batch_size: int,
+        epochs: int
     ) -> None:
         """
         This function is being used as the main functionality for training the MLP model.
@@ -417,7 +418,7 @@ class MultiLayerPerceptron(Base):
             None
         """
 
-        model_train, _ = self._split_train(
+        model_train, model_validation = self._split_train(
             df=self.train, 
             labels=self.labels
         )
@@ -434,7 +435,8 @@ class MultiLayerPerceptron(Base):
             train_set=model_train,
             val_set=model_validation,
             eta=eta,
-            batch_size=batch_size
+            batch_size=batch_size,
+            epochs=epochs
         )
 
         self._save_model(
@@ -446,8 +448,8 @@ def inference(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    experiment_name: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
+    device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
 ) -> None:
 
     mlp = MultiLayerPerceptron(
@@ -469,8 +471,8 @@ def evaluate(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    experiment_name: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
+    device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
 ) -> None:
     
     MultiLayerPerceptron(
@@ -486,10 +488,11 @@ def train(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
     doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    experiment_name: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    device: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    eta: Annotated[float, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    batch_size: Annotated[int, typer.Option(help="Checkpoint directory path for the mlp")] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
+    device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
+    eta: Annotated[float, typer.Option(help="The learning rate you want to use.")] = None,
+    batch_size: Annotated[int, typer.Option(help="The amount of batch size you want to set the dataloaders for")] = None,
+    epochs: Annotated[int, typer.Option(help="The amount of epochs you want to run the mlp for.")] = None
 ) -> None:
     
     MultiLayerPerceptron(
@@ -500,7 +503,8 @@ def train(
         device=device
     ).run(
         eta=eta,
-        batch_size=batch_size
+        batch_size=batch_size,
+        epochs=epochs
     )
         
 
