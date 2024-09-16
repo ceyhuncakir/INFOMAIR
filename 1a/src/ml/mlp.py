@@ -71,6 +71,15 @@ class MLPDataset(Dataset):
 
 
 class MultiLayerPerceptron(Base):
+    """
+    This class is meant to house in the functionalities needed to train a mlp model.
+
+    Attributes:
+        dataset_dir_path (str): The dataset directory path defining where the dialog_acts data is stored.
+        doc2vec_data_dir_path (str): The doc2vec data directory path which is needed to load in the doc2vec model.
+        checkpoint_dir_path (str): The checkpoint directory path needed to save the mlp model.
+        device (str): A string defining the device
+    """
     def __init__(
         self,
         dataset_dir_path: str,
@@ -97,6 +106,16 @@ class MultiLayerPerceptron(Base):
         train_set: pd.DataFrame,
         val_set: pd.DataFrame
     ) -> MLP:
+        """
+        This function is needed to train the MLP model.
+
+        Args:
+            train_set (pd.DataFrame): A pandas dataframe consisting of the train set.
+            val_set (pd.DataFrame): A pandas dataframe consisting of the validation set.
+
+        Returns:
+            MLP: The mlp model.
+        """
 
         train_dataset = MLPDataset(df=train_set)
         val_dataset = MLPDataset(df=val_set)
@@ -172,6 +191,16 @@ class MultiLayerPerceptron(Base):
         model: MLP,
         test_set: pd.DataFrame
     ) -> pd.DataFrame:
+        """
+        This function is needed to evaluate the model / predict based on the given test set.
+
+        Args:
+            model (MLP): A mlp model construct that will predict the test set.
+            test_set (pd.DataFrame): A pandas dataframe consisting of the test set.
+        
+        Returns:
+            pd.DataFrame: A pandas dataframe consisting of the test set with the corresponding predicted values.
+        """
         
         test_dataset = MLPDataset(df=test_set)
 
@@ -203,6 +232,15 @@ class MultiLayerPerceptron(Base):
         self,
         text: str
     ) -> None:
+        """
+        This function is needed to do inference.
+
+        Args:
+            text (str): A text defining the utterance
+
+        Returns:
+            None
+        """
 
         device = self._device
         model = self._load_mlp()
@@ -222,6 +260,15 @@ class MultiLayerPerceptron(Base):
         self,
         model: MLP
     ) -> None:
+        """
+        This function is needed to save the MLP model.
+
+        Args:
+            model (MLP): The MLP model constructor which needs to be saved.
+
+        Returns:
+            None
+        """
         
         torch.save(model.state_dict(), self._checkpoint_dir_path + "/" + "model.pth")
 
@@ -229,6 +276,15 @@ class MultiLayerPerceptron(Base):
     def _load_doc2vec(
         self
     ) -> gensim.models.doc2vec.Doc2Vec:
+        """
+        This function is needed to load in the doc2vec model.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         
         return Doc2Vec.load(self._doc2vec_data_dir_path)
 
@@ -236,6 +292,15 @@ class MultiLayerPerceptron(Base):
     def _load_mlp(
         self
     ) -> None:
+        """
+        This function is needed to load in the trained MLP model.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         
         model = MLP(feature_shape=300, num_classes=len(self.labels)).to(self._device)
         model.load_state_dict(torch.load(self._checkpoint_dir_path + "/model.pth", weights_only=True))
@@ -249,6 +314,16 @@ class MultiLayerPerceptron(Base):
         data: list[pd.DataFrame, ...],
         model: gensim.models.doc2vec.Doc2Vec
     ) -> list[pd.DataFrame, ...]:
+        """
+        This function is needed to generate embeddings based on the utterance.
+
+        Args:
+            data (list[pd.DataFrame, ...]): A dataframe consisting the individial datasets.
+            model (gensim.models.doc2vec.Doc2Vec): The model required to generate embeddings.
+
+        Returns:
+            list[pd.DataFrame, ...]: A list containing the individual datasets.
+        """
         
         for datasets in data:
             
@@ -264,6 +339,16 @@ class MultiLayerPerceptron(Base):
         df: pd.DataFrame,
         labels: List[str] 
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        This function is needed to split the initial train dataset into a train and validation set for the MLP.
+
+        Args:
+            df (pd.DataFrame): A pandas dataframe consisting of the train dataset.
+            labels (List[str]): A list of strings defining the labels for each prediction.
+
+        Returns:
+            Tuple[pd.DataFrame, pd.DataFrame]: A tuple consisting of the train / valiidation dataset.
+        """
 
         train, validation = train_test_split(df, train_size=0.80, random_state=42)
 
@@ -276,6 +361,15 @@ class MultiLayerPerceptron(Base):
     def evaluate(
         self
     ) -> None:
+        """
+        This function is being used as the main evaluation function for the MLP model.
+
+        Args:
+            None
+        
+        Returns:
+            None
+        """
 
         model = self._load_model()
 
@@ -294,6 +388,15 @@ class MultiLayerPerceptron(Base):
     def run(
         self
     ) -> None:
+        """
+        This function is being used as the main functionality for training the MLP model.
+
+        Args:
+            None
+        
+        Returns:
+            None
+        """
 
         self.model_test["y_true"] = self.model_test['act'].apply(
             lambda x: self.labels.index(x)
