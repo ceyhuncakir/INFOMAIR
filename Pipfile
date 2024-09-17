@@ -21,4 +21,4 @@ torchaudio = "*"
 python_version = "3.10"
 
 [scripts]
-infomair = "python3 1a/src/main.py"
+a1 = "python3 1a/src/main.py"

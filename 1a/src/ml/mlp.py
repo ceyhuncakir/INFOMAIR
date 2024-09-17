@@ -87,7 +87,8 @@ class MultiLayerPerceptron(Base):
         doc2vec_data_dir_path: str,
         checkpoint_dir_path: str,
         experiment_name: str,
-        device: str
+        device: str,
+        deduplication: bool
     ) -> None:
         
         self._dataset_dir_path = dataset_dir_path
@@ -95,10 +96,11 @@ class MultiLayerPerceptron(Base):
         self._checkpoint_dir_path = checkpoint_dir_path
         self._experiment_name = experiment_name
         self._device = device
+        self._deduplication = deduplication
 
         self.df = self._load_data()
         self.df = self.set_columns(df=self.df)
-        self.df = self._preprocess(df=self.df)
+        self.df = self._preprocess(df=self.df, deduplication=deduplication)
         self.labels = self._get_labels(df=self.df)
         self.train, self.model_test = self._split_train_test(df=self.df)
         self.doc2vec = self._load_doc2vec()
@@ -450,6 +452,7 @@ def inference(
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
 
     mlp = MultiLayerPerceptron(
@@ -457,7 +460,8 @@ def inference(
         doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
-        device=device
+        device=device,
+        deduplication=deduplication
     )
 
     while True:
@@ -473,6 +477,7 @@ def evaluate(
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
     
     MultiLayerPerceptron(
@@ -480,7 +485,8 @@ def evaluate(
         doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
-        device=device
+        device=device,
+        deduplication=deduplication
     ).evaluate()
 
 @mlp_app.command()
@@ -492,7 +498,8 @@ def train(
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
     eta: Annotated[float, typer.Option(help="The learning rate you want to use.")] = None,
     batch_size: Annotated[int, typer.Option(help="The amount of batch size you want to set the dataloaders for")] = None,
-    epochs: Annotated[int, typer.Option(help="The amount of epochs you want to run the mlp for.")] = None
+    epochs: Annotated[int, typer.Option(help="The amount of epochs you want to run the mlp for.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
     
     MultiLayerPerceptron(
@@ -500,7 +507,8 @@ def train(
         doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
-        device=device
+        device=device,
+        deduplication=deduplication
     ).run(
         eta=eta,
         batch_size=batch_size,
