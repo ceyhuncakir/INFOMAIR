@@ -22,11 +22,19 @@ pipenv install
 ```
 
 # Data
-The data can be originally be found on the following site:
+The dialog_acts.dat data can be originally be found on the following site:
 
 ```
 https://www.microsoft.com/en-us/research/event/dialog-state-tracking-challenge/
 ```
+
+To train the doc2vec model we used a wikipedia dump database in order to train the doc2vec model on a english vocabulary. You can find the following dump at this site:
+
+```
+https://dumps.wikimedia.org/enwiki/20240720/
+```
+
+Any dump thats over 300MB is enough for the doc2vec model.
 
 # Usage
 Before actually using the act classifiers you should note that for the machine learning models you first need to train the models in order to do any real predictions on the test set. For inference this is the same case. Before training any machine learning model make sure you also train the doc2vec model first before running the train commands. Since we generate embeddings based on the trained do2vec model, we can train the machine learning models before doing so.
