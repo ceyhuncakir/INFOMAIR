@@ -49,6 +49,16 @@ class Base:
         self,
         df: pd.DataFrame
     ) -> pd.DataFrame:
+        """
+        This function is needed to set the appriopate columns inside the dataframe. 
+        so we can distinguis the acts and utterances
+
+        Args:
+            df (pd.DataFrame): A dataframe consisting of raw dialogue data.
+
+        Returns:
+            pd.DataFrame: A dataframe consisting of columns of acts and utterances
+        """
 
         df[['act', 'utterance']] = df.apply(
             lambda row: self._get_features(row=row['data']), axis=1
@@ -62,14 +72,26 @@ class Base:
         df: pd.DataFrame,
         deduplication: bool = False
     ) -> pd.DataFrame:
+        """
+        This function is needed to preprocess the data into necessary steps.
+
+        Args:
+            df (pd.DataFrame): The dataframe consisting of data from dialogs.
+            deduplication (bool): A bool defining whether to deduplicate the data.
+        """
 
         df['act'] = df['act'].str.lower()
         df['utterance'] = df['utterance'].str.lower()
         df['utterance'] = df['utterance'].str.lstrip()
         
         if deduplication:
-            df = df.drop_duplicates(subset=['utterance'])
+            # dropping duplicates
+            df = df.drop_duplicates(subset=['utterance'])  
+
+            # getting sample counts per class
             counts = list(df['act'].value_counts().index)
+
+            # removing act with the lowest count
             df = df[df['act'].isin(counts[:-1])]
                         
         return df
@@ -79,6 +101,15 @@ class Base:
         self,
         df: pd.DataFrame
     ) -> List[str]:
+        """
+        This function gets all the unique labels.
+
+        Args:
+            df (pd.DataFrame): A dataframe where the unique labels is being fetched from.
+
+        Returns:
+            List[str]: A list containing strings which define the labels
+        """
         
         return list(df['act'].unique())
 
@@ -87,6 +118,15 @@ class Base:
         self,
         df: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        This function is needed to split the data into train adn test set.
+
+        Args:
+            df (pd.DataFrame): A dataframe which consists data that should be split.
+
+        Returns:
+            Tuple[pd.DataFrame, pd.DataFrame]: A tuple consisting of the train and test dataframe.
+        """
         
         train, test = train_test_split(
             df[['act', 'utterance']], 

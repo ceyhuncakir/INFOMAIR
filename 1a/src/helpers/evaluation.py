@@ -36,7 +36,7 @@ class Evaluate:
         self,
         y_pred: pd.Series,
         y_true: pd.Series
-    ) -> None:
+    ) -> str:
 
         """
         This function is meant to be used as a confusion matrix.
@@ -58,7 +58,7 @@ class Evaluate:
     
     def run(
         self
-    ) -> pd.DataFrame:
+    ) -> None:
         """
         This function is meant to be the main function thats being called to evaluate the model.
 
@@ -73,8 +73,6 @@ class Evaluate:
             y_pred=self._dataframe['y_pred'],
             y_true=self._dataframe['y_true']
         )
-
-        print(type(confusion_matrix))
 
         results = f"""
         Experiment: {self._experiment}
