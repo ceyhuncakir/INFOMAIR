@@ -4,7 +4,6 @@ from typing import Tuple, List
 import pickle
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from gensim.models.doc2vec import Doc2Vec
 import numpy as np
 import typer
 from typing_extensions import Annotated
@@ -22,7 +21,6 @@ class DecisionTree(Base):
 
     Attributes:
         dataset_dir_path (str): The dataset directory path where the original dialog acts dataset resides in.
-        doc2vec_data_dir_path (str): The dataset directory path where the trained doc2vec model resides in.
         checkpoint_dir_path (str): The checkpoint directory path where the trainable xgboost model will be saved in.
         experiment_name (str): The experiment name of the xgboost model that will be saved as.
         deduplication (bool): Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.
@@ -31,14 +29,12 @@ class DecisionTree(Base):
     def __init__(
         self,
         dataset_dir_path: str,
-        doc2vec_data_dir_path: str,
         checkpoint_dir_path: str,
         experiment_name: str,
         deduplication: bool
     ) -> None:
         
         self._dataset_dir_path = dataset_dir_path
-        self._doc2vec_data_dir_path = doc2vec_data_dir_path
         self._checkpoint_dir_path = checkpoint_dir_path
         self._experiment_name = experiment_name
 
@@ -49,11 +45,6 @@ class DecisionTree(Base):
         self.labels = self._get_labels(df=self.df)
         self.train, self.model_test = self._split_train_test(df=self.df)
         self.model_train, self.model_validation = self._split_train(df=self.train, labels=self.labels)
-        self.doc2vec = self._load_doc2vec()
-        self.model_train, self.model_validation, self.model_test = self._generate_embeddings(
-            data=[self.model_train, self.model_validation, self.model_test],
-            model=self.doc2vec
-        )
 
     @logger.catch
     def _train_model(
@@ -161,48 +152,7 @@ class DecisionTree(Base):
         test["y_pred"] = y_pred
 
         return test
-
-    @logger.catch
-    def _load_doc2vec(
-        self
-    ) -> None:
-        """
-        This function loads in the trained doc2vec model based on the given data directory.
-
-        Args:
-            None
-
-        Returns:
-            model: The doc2vec model that has been loaded in.
-        """
-        
-        return Doc2Vec.load(self._doc2vec_data_dir_path)
     
-    @logger.catch
-    def _generate_embeddings(
-        self,
-        data: list[pd.DataFrame, ...],
-        model
-    ) -> list[pd.DataFrame, ...]:
-        """
-        This function is needed to generate the necessary embeddings based on the trained doc2vec model.
-
-        Args:
-            data (list[pd.DataFrame, ...]): A list containing the individual sets where training, validation, and testing will happen on.
-            model (): The doc2vec model which is loaded in to generate embeddings for every utterance occurence.
-
-        Returns:
-            list[pd.DataFrame, ...]: A list containing the individual sets where training, validation, and testing will happen on, with the embeddings,
-        """
-        
-        for datasets in data:
-            
-            datasets['embeddings'] = datasets['utterance'].apply(
-                lambda utterance: np.array(model.infer_vector(utterance.split()))
-            )
-
-        return data
-
     @logger.catch
     def _split_train(
         self,
@@ -246,8 +196,8 @@ class DecisionTree(Base):
         decisiontree = self._load_model()
 
         utterance = utterance.lower().lstrip()
-
-        embeddings = np.array(self.doc2vec.infer_vector(utterance.split())).reshape(1, -1)
+        
+        # tokenization
 
         y_preds_proba = decisiontree.predict_proba(embeddings)
 
@@ -318,7 +268,6 @@ class DecisionTree(Base):
 @decisiontree_app.command()
 def evaluate(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the trained doc2vec model resides in.")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable xgboost model will be saved in.")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name of the xgboost model that will be saved as.")] = None,
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
@@ -326,7 +275,6 @@ def evaluate(
 
     DecisionTree(
         dataset_dir_path=dataset_dir_path,
-        doc2vec_data_dir_path=doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         deduplication=deduplication
@@ -335,7 +283,6 @@ def evaluate(
 @decisiontree_app.command()
 def inference(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the trained doc2vec model resides in.")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.")] = None,
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
@@ -343,7 +290,6 @@ def inference(
     
     decisiontree = DecisionTree(
         dataset_dir_path=dataset_dir_path,
-        doc2vec_data_dir_path=doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         deduplication=deduplication
@@ -358,7 +304,6 @@ def inference(
 @decisiontree_app.command()
 def train(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the trained doc2vec model resides in.")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.")] = None,
     max_depth: Annotated[int, typer.Option(help="The max depth of the decision tree model.")] = None,
@@ -369,7 +314,6 @@ def train(
     
     DecisionTree(
         dataset_dir_path=dataset_dir_path,
-        doc2vec_data_dir_path=doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         deduplication=deduplication

@@ -12,6 +12,15 @@ from sklearn.metrics import (
 )
 
 class Evaluate:
+    """
+    This class is meant as a evaluation class. this will evaluate the selected model based on several key metrics.
+
+    Attributes:
+        experiment (str): The experiment name of the evaluation
+        dataframe (pd.DataFrame): The dataframe consisting of values to be evaluated.
+        labels (List[str]): The labels we have from our dataset.
+    """
+
     def __init__(
         self,
         experiment: str, 
@@ -23,58 +32,22 @@ class Evaluate:
         self._dataframe = dataframe
         self._labels = labels
 
-    def _precision(
-        self,
-        y_pred: pd.Series,
-        y_true: pd.Series
-    ) -> None:
-        
-        return precision_score(
-            y_true=y_true, 
-            y_pred=y_pred,
-            average="micro",
-        )
-
-    def _recall(
-        self,
-        y_pred: pd.Series,
-        y_true: pd.Series
-    ) -> None:
-        
-        return recall_score(
-            y_true=y_true,
-            y_pred=y_pred,
-            average="micro",
-        )
-    
-    def _f1_score(
-        self,
-        y_pred: pd.Series,
-        y_true: pd.Series
-    ) -> None:
-        
-        return f1_score(
-            y_pred=y_pred,
-            y_true=y_true,
-            average="micro",
-        )
-    
-    def _accuracy(
-        self,
-        y_pred: pd.Series,
-        y_true: pd.Series
-    ) -> None:
-        
-        return accuracy_score(
-            y_pred=y_pred,
-            y_true=y_true
-        )
-
     def _confusion_matrix(
         self,
         y_pred: pd.Series,
         y_true: pd.Series
     ) -> None:
+
+        """
+        This function is meant to be used as a confusion matrix.
+
+        Args:
+            y_pred (pd.Series): A pandas series consisting of predicted values based on the input.
+            y_true (pd.Series): A pandas series consisting of predicted values based on the input.
+
+        Returns:
+            None
+        """
         
         return classification_report(
             y_true, 
@@ -86,39 +59,25 @@ class Evaluate:
     def run(
         self
     ) -> pd.DataFrame:
+        """
+        This function is meant to be the main function thats being called to evaluate the model.
 
-        precision = self._precision(
-            y_pred=self._dataframe['y_pred'],
-            y_true=self._dataframe['y_true']
-        )
+        Args:
+            None
 
-        recall = self._recall(
-            y_pred=self._dataframe['y_pred'],
-            y_true=self._dataframe['y_true']
-        )
-
-        f1_score = self._f1_score(
-            y_pred=self._dataframe['y_pred'],
-            y_true=self._dataframe['y_true']
-        )
-
-        accuracy = self._accuracy(
-            y_pred=self._dataframe['y_pred'],
-            y_true=self._dataframe['y_true']
-        )
+        Returns:    
+            None
+        """
 
         confusion_matrix = self._confusion_matrix(
             y_pred=self._dataframe['y_pred'],
             y_true=self._dataframe['y_true']
         )
 
+        print(type(confusion_matrix))
+
         results = f"""
         Experiment: {self._experiment}
-
-        precision: {precision}
-        recall: {recall}
-        f1_score: {f1_score}
-        accuracy: {accuracy}
         
         confusion matrix:\n {confusion_matrix}
         """

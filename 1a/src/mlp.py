@@ -4,7 +4,6 @@ from typing import Tuple, List
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
-from gensim.models.doc2vec import Doc2Vec
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -77,14 +76,12 @@ class MultiLayerPerceptron(Base):
 
     Attributes:
         dataset_dir_path (str): The dataset directory path defining where the dialog_acts data is stored.
-        doc2vec_data_dir_path (str): The doc2vec data directory path which is needed to load in the doc2vec model.
         checkpoint_dir_path (str): The checkpoint directory path needed to save the mlp model.
         device (str): A string defining the device
     """
     def __init__(
         self,
         dataset_dir_path: str,
-        doc2vec_data_dir_path: str,
         checkpoint_dir_path: str,
         experiment_name: str,
         device: str,
@@ -92,7 +89,6 @@ class MultiLayerPerceptron(Base):
     ) -> None:
         
         self._dataset_dir_path = dataset_dir_path
-        self._doc2vec_data_dir_path = doc2vec_data_dir_path
         self._checkpoint_dir_path = checkpoint_dir_path
         self._experiment_name = experiment_name
         self._device = device
@@ -105,11 +101,7 @@ class MultiLayerPerceptron(Base):
         self.labels = self._get_labels(df=self.df)
         self.train, self.model_test = self._split_train_test(df=self.df)
         self.model_train, self.model_validation = self._split_train(df=self.train, labels=self.labels)
-        self.doc2vec = self._load_doc2vec()
-        self.model_train, self.model_validation, self.model_test = self._generate_embeddings(
-            data=[self.model_train, self.model_validation, self.model_test],
-            model=self.doc2vec
-        )
+        #encoding
 
     @logger.catch
     def _train(
@@ -261,22 +253,6 @@ class MultiLayerPerceptron(Base):
         os.makedirs(self._checkpoint_dir_path + "/" + self._experiment_name, exist_ok=True)
         torch.save(model.state_dict(), self._checkpoint_dir_path + "/" + self._experiment_name + "/" + "model.pth")
 
-    @logger.catch      
-    def _load_doc2vec(
-        self
-    ) -> gensim.models.doc2vec.Doc2Vec:
-        """
-        This function is needed to load in the doc2vec model.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
-        
-        return Doc2Vec.load(self._doc2vec_data_dir_path)
-
     @logger.catch
     def _load_mlp(
         self
@@ -296,31 +272,6 @@ class MultiLayerPerceptron(Base):
         model.eval()
         
         return model
-    
-    @logger.catch
-    def _generate_embeddings(
-        self,
-        data: list[pd.DataFrame, ...],
-        model: gensim.models.doc2vec.Doc2Vec
-    ) -> list[pd.DataFrame, ...]:
-        """
-        This function is needed to generate embeddings based on the utterance.
-
-        Args:
-            data (list[pd.DataFrame, ...]): A dataframe consisting the individial datasets.
-            model (gensim.models.doc2vec.Doc2Vec): The model required to generate embeddings.
-
-        Returns:
-            list[pd.DataFrame, ...]: A list containing the individual datasets.
-        """
-        
-        for datasets in data:
-            
-            datasets['embeddings'] = datasets['utterance'].apply(
-                lambda x: np.array(model.infer_vector(x.split()))
-            )
-
-        return data
 
     @logger.catch
     def _split_train(
@@ -364,8 +315,7 @@ class MultiLayerPerceptron(Base):
         device = self._device
         model = self._load_mlp()
 
-        embeddings = self.doc2vec.infer_vector(text.split())
-
+        #encoding
         embeddings = torch.tensor(embeddings.reshape(1, -1))
 
         with torch.no_grad():
@@ -394,10 +344,7 @@ class MultiLayerPerceptron(Base):
             lambda x: self.labels.index(x)
         )
 
-        data = self._generate_embeddings(
-            data=[self.model_test],
-            model=self.doc2vec
-        )  
+        #encoding
 
         model_test = pd.concat([data[0], pd.get_dummies(data[0]['y_true'])], axis=1)
 
@@ -444,7 +391,6 @@ class MultiLayerPerceptron(Base):
 @mlp_app.command()
 def inference(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
-    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
@@ -453,7 +399,6 @@ def inference(
 
     mlp = MultiLayerPerceptron(
         dataset_dir_path = dataset_dir_path,
-        doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         device=device,
@@ -469,7 +414,6 @@ def inference(
 @mlp_app.command()
 def evaluate(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
-    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
@@ -478,7 +422,6 @@ def evaluate(
     
     MultiLayerPerceptron(
         dataset_dir_path = dataset_dir_path,
-        doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         device=device,
@@ -488,7 +431,6 @@ def evaluate(
 @mlp_app.command()
 def train(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
-    doc2vec_data_dir_path: Annotated[str, typer.Option(help="The doc2vec model dataset directory path")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
@@ -500,7 +442,6 @@ def train(
     
     MultiLayerPerceptron(
         dataset_dir_path = dataset_dir_path,
-        doc2vec_data_dir_path = doc2vec_data_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         device=device,
