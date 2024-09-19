@@ -353,7 +353,7 @@ def inference(
 
         utterance = input("Enter your utterance: ")
 
-        decisiontree.inference(utterance=utterance)
+        decisiontree.inference(utterance=utterance.lower())
 
 @decisiontree_app.command()
 def train(

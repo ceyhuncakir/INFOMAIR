@@ -360,7 +360,7 @@ def inference(
 
         utterance = input("Enter your utterance: ")
 
-        xgboost.inference(utterance=utterance)
+        xgboost.inference(utterance=utterance.lower())
 
 @xgboost_app.command()
 def train(

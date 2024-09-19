@@ -69,7 +69,9 @@ class Base:
         
         if deduplication:
             df = df.drop_duplicates(subset=['utterance'])
-        
+            counts = list(df['act'].value_counts().index)
+            df = df[df['act'].isin(counts[:-1])]
+                        
         return df
 
     @logger.catch
@@ -89,7 +91,7 @@ class Base:
         train, test = train_test_split(
             df[['act', 'utterance']], 
             train_size=0.85, 
-            random_state=42
+            random_state=42            
         )
 
         return train, test

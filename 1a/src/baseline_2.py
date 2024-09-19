@@ -129,7 +129,7 @@ class Baseline_2(Base):
             None
         """
 
-        y_pred = self._rule_based(text)
+        y_pred = self._rule_based(text.lower())
         
         print(f"""act: {y_pred}\n""")
 

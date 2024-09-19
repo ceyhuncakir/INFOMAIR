@@ -1,10 +1,10 @@
 import typer
 
-from baselines.baseline_1 import baseline_1_app
-from baselines.baseline_2 import baseline_2_app
-from ml.xgboost import xgboost_app
-from ml.decisiontree import decisiontree_app
-from ml.mlp import mlp_app
+from baseline_1 import baseline_1_app
+from baseline_2 import baseline_2_app
+from xgboost import xgboost_app
+from decisiontree import decisiontree_app
+from mlp import mlp_app
 from helpers.doc2vec import doc2vec_app
 
 app = typer.Typer()

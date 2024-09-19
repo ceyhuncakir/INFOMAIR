@@ -101,9 +101,15 @@ class MultiLayerPerceptron(Base):
         self.df = self._load_data()
         self.df = self.set_columns(df=self.df)
         self.df = self._preprocess(df=self.df, deduplication=deduplication)
+
         self.labels = self._get_labels(df=self.df)
         self.train, self.model_test = self._split_train_test(df=self.df)
+        self.model_train, self.model_validation = self._split_train(df=self.train, labels=self.labels)
         self.doc2vec = self._load_doc2vec()
+        self.model_train, self.model_validation, self.model_test = self._generate_embeddings(
+            data=[self.model_train, self.model_validation, self.model_test],
+            model=self.doc2vec
+        )
 
     @logger.catch
     def _train(
@@ -124,6 +130,9 @@ class MultiLayerPerceptron(Base):
         Returns:
             MLP: The mlp model.
         """
+
+        train_set = pd.concat([train_set, pd.get_dummies(train_set['y_true'])], axis=1)
+        val_set = pd.concat([val_set, pd.get_dummies(val_set['y_true'])], axis=1)
 
         train_dataset = MLPDataset(df=train_set)
         val_dataset = MLPDataset(df=val_set)
@@ -330,7 +339,7 @@ class MultiLayerPerceptron(Base):
             Tuple[pd.DataFrame, pd.DataFrame]: A tuple consisting of the train / valiidation dataset.
         """
 
-        train, validation = train_test_split(df, train_size=0.80, random_state=42)
+        train, validation = train_test_split(df, train_size=0.60, random_state=30)
 
         train['y_true'] = df['act'].apply(lambda x: labels.index(x))
         validation['y_true'] = df['act'].apply(lambda x: labels.index(x))
@@ -420,22 +429,9 @@ class MultiLayerPerceptron(Base):
             None
         """
 
-        model_train, model_validation = self._split_train(
-            df=self.train, 
-            labels=self.labels
-        )
-
-        model_train, model_validation = self._generate_embeddings(
-            data=[model_train, model_validation],
-            model=self.doc2vec
-        )  
-
-        model_train = pd.concat([model_train, pd.get_dummies(model_train['y_true'])], axis=1)
-        model_validation = pd.concat([model_validation, pd.get_dummies(model_validation['y_true'])], axis=1)
-
         model = self._train(
-            train_set=model_train,
-            val_set=model_validation,
+            train_set=self.model_train,
+            val_set=self.model_validation,
             eta=eta,
             batch_size=batch_size,
             epochs=epochs
@@ -468,7 +464,7 @@ def inference(
 
         text = input("Enter your utterance: ")
 
-        mlp.inference(text=text)
+        mlp.inference(text=text.lower())
 
 @mlp_app.command()
 def evaluate(
