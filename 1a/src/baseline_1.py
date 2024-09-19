@@ -1,6 +1,5 @@
 from typing import Tuple, List
 
-from sklearn.model_selection import train_test_split
 import pandas as pd
 import typer
 from typing_extensions import Annotated
@@ -24,12 +23,10 @@ class Baseline_1(Base):
     ) -> None: 
         
         self._dataset_dir_path = dataset_dir_path
-        self.df = self._load_data()
-        self.df = self.set_columns(df=self.df)
-        self.df = self._preprocess(df=self.df)
-        self.majority = self._get_majority_class(df=self.df)
-        self.labels = self._get_labels(df=self.df)
-        self.train, self.test = self._split_train_test(df=self.df)
+        self._deduplication = deduplication
+        _, self.test, self.labels, self.majority = self.process(
+            deduplication=False
+        )
 
     def _get_majority_class(
         self,
@@ -127,7 +124,7 @@ def inference(
     """
 
     baseline_1 = Baseline_1(
-        dataset_dir_path=dataset_dir_path
+        dataset_dir_path=dataset_dir_path,
     )
 
     while True:
@@ -151,5 +148,5 @@ def evaluate(
     """
     
     Baseline_1(
-        dataset_dir_path=dataset_dir_path
+        dataset_dir_path=dataset_dir_path,
     ).run()

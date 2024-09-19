@@ -1,6 +1,5 @@
 from typing import Tuple, List
 
-from sklearn.model_selection import train_test_split
 import pandas as pd
 import typer
 from typing_extensions import Annotated
@@ -20,16 +19,14 @@ class Baseline_2(Base):
 
     def __init__(
         self,
-        dataset_dir_path: str
+        dataset_dir_path: str,
     ) -> None: 
         
         self._dataset_dir_path = dataset_dir_path
-        self.df = self._load_data()
-        self.df = self.set_columns(df=self.df)
-        self.majority = self._get_majority_class(df=self.df)
-        self.df = self._preprocess(df=self.df)
-        self.labels = self._get_labels(df=self.df)
-        self.train, self.test = self._split_train_test(df=self.df)
+        self._deduplication = deduplication
+        _, self.test, self.labels, self.majority = self.process(
+            deduplication=False
+        )
 
     def _rule_based(
         self,
@@ -72,22 +69,6 @@ class Baseline_2(Base):
                     continue
 
         return self.majority
-
-    def _get_majority_class(
-        self,
-        df: pd.DataFrame
-    ) -> str:
-        """
-        This function gets the majority class based on the dataset distribution.
-
-        Args:
-            df (pd.DataFrame): A dataframe consisting of data which is needed to determine the majority.
-
-        Returns:
-            str: A string containing the majority class.
-        """
-
-        return df['act'].value_counts().idxmax()
 
     def _forward(
         self,
@@ -172,7 +153,7 @@ def inference(
     """
 
     baseline_2 = Baseline_2(
-        dataset_dir_path=dataset_dir_path
+        dataset_dir_path=dataset_dir_path,
     )
 
     while True:
@@ -196,5 +177,5 @@ def evaluate(
     """
     
     Baseline_2(
-        dataset_dir_path=dataset_dir_path
+        dataset_dir_path=dataset_dir_path,
     ).run()

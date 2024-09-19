@@ -37,12 +37,10 @@ class Xgboost(Base):
         self._checkpoint_dir_path = checkpoint_dir_path
         self._experiment_name = experiment_name
 
-        self.df = self._load_data()
-        self.df = self.set_columns(df=self.df)
-        self.df = self._preprocess(df=self.df, deduplication=deduplication)
-
-        self.labels = self._get_labels(df=self.df)
-        self.train, self.model_test = self._split_train_test(df=self.df)
+        self.train, self.test, self.labels, self.majority = self.process(
+            deduplication=deduplication
+        )
+        
         self.model_train, self.model_validation = self._split_train(df=self.train, labels=self.labels)
         #encoding
 
@@ -237,7 +235,7 @@ class Xgboost(Base):
         
         results = self._evaluate_test(
             model=xgb_classfier,
-            test=self.model_test,
+            test=self.test,
             labels=self.labels
         )
         

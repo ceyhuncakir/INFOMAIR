@@ -94,12 +94,10 @@ class MultiLayerPerceptron(Base):
         self._device = device
         self._deduplication = deduplication
 
-        self.df = self._load_data()
-        self.df = self.set_columns(df=self.df)
-        self.df = self._preprocess(df=self.df, deduplication=deduplication)
-
-        self.labels = self._get_labels(df=self.df)
-        self.train, self.model_test = self._split_train_test(df=self.df)
+        self.train, self.test, self.labels, self.majority = self.process(
+            deduplication=deduplication
+        )
+        
         self.model_train, self.model_validation = self._split_train(df=self.train, labels=self.labels)
         #encoding
 
@@ -340,7 +338,7 @@ class MultiLayerPerceptron(Base):
 
         model = self._load_mlp()
 
-        self.model_test["y_true"] = self.model_test['act'].apply(
+        self.test["y_true"] = self.test['act'].apply(
             lambda x: self.labels.index(x)
         )
 

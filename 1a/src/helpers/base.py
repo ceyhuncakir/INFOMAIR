@@ -97,13 +97,31 @@ class Base:
         return train, test
 
     @logger.catch
+    def _get_majority_class(
+        self,
+        df: pd.DataFrame
+    ) -> str:
+        """
+        This function gets the majority class based on the dataset distribution.
+
+        Args:
+            df (pd.DataFrame): A dataframe consisting of data which is needed to determine the majority.
+
+        Returns:
+            str: A string containing the majority class.
+        """
+
+        return df['act'].value_counts().idxmax()
+
+    @logger.catch
     def process(
-        self
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        self,
+        deduplication: bool
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, List[str], str]:
 
         df = self._load_data()
         df = self.set_columns(df=df)
-        df = self._preprocess(df=df)
+        df = self._preprocess(df=df, deduplication=deduplication)
 
         majority = self._get_majority_class(df=df)
 
@@ -111,4 +129,4 @@ class Base:
 
         train, test = self._split_train_test(df=df)
 
-        return train, test
+        return train, test, labels, majority
