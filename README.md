@@ -75,6 +75,27 @@ To train the necessary Doc2Vec model you can use the following pipenv command:
 pipenv run a1 doc2vec train --data-dump-data-dir [DIALOG DATASET PATH] --checkpoint-data-dir [THE PATH OF DOC2VEC DIRECTORY] --experiment-name [THE NAME OF THE EXPERIMENT] --vector-size [THE DIMENSIONS OF THE VECTOR] --min_count [FREQ COUNT OF WORDS] --epochs [THE AMOUNT OF EPOCHS] --preprocess_lower [wHETHER TO HAVE LOWERCASED STRINGS] --preprocess-token-max-len [THE MAXIMUM LENGTH OF A TOKEN] --preprocess-processes [THE AMOUNT OF PROCESSES]
 ```
 
+## Decision tree (ml)
+### Train
+To train the decision tree model run the following command:
+
+```
+pipenv run 1a decisiontree train --dataset-dir-path [DATASET DIRECTORY PATH] --doc2vec-data-dir-path [DOC2VEC DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --max-depth [MAX-DEPTH] --min-samples-split [MIN-SAMPLES-SPLIT] --min-samples-leaf [MIN-SAMPLES-LEAF] --deduplication [DEDUPLICATION FLAG]
+```
+
+### Evaluation
+To evaluate the decision tree model run the following pipenv command:
+
+```
+pipenv run a1 decisiontree evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --doc2vec-data-dir-path [DOC2VEC DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
+```
+
+### inference
+To run the inference on the trained decision tree model run the following pipenv commnad:
+```
+pipenv run a1 decisiontree inference --dataset-dir-path [DATASET DIRECTORY PATH] --doc2vec-data-dir-path [DOC2VEC DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
+```
+
 ## Xgboost (ml)
 ### Train
 To train the xgboost model run the following command:
