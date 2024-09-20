@@ -2,30 +2,30 @@ import os
 from typing import Tuple, List, Union
 
 import pickle
-from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
 import typer
 from typing_extensions import Annotated
 from loguru import logger
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.linear_model import LogisticRegression
 
 from helpers.base import Base
 from helpers.evaluation import Evaluate
 
-decisiontree_app = typer.Typer()
+logisticreg_app = typer.Typer()
 
-class DecisionTree(Base):
+class LogisticRegressionClassifier(Base):
     """
-    This class houses the training, evaluation and usage of the decision tree model.
+    This class is needed to train the logistic regression model for the dialogue act classification task.
 
     Attributes:
-        dataset_dir_path (str): The dataset directory path where the original dialog acts dataset resides in.
-        checkpoint_dir_path (str): The checkpoint directory path where the trainable decision tree will be saved in.
-        experiment_name (str): The experiment name of the decision tree that will be saved as.
-        deduplication (bool): Whether the decision tree should be trained on deduplicated data from dialog acts dataset.
+        dataset_dir_path (str): The path to the dataset directory.
+        vectorizer_dir_path (str): The path to the vectorizer directory.
+        checkpoint_dir_path (str): The path to the checkpoint directory.
+        experiment_name (str): The name of the experiment.
+        deduplication (bool): Whether the model should be trained on deduplicated data.
     """
 
     def __init__(
@@ -41,9 +41,10 @@ class DecisionTree(Base):
         self._vectorizer_dir_path = vectorizer_dir_path
         self._checkpoint_dir_path = checkpoint_dir_path
         self._experiment_name = experiment_name
-
+        self._deduplication = deduplication
+        
         self._train, self._test, self._labels, self._majority = self.process(
-            deduplication=False
+            deduplication=deduplication
         )
 
         self._vectorizer = self._load_vectorizer()
@@ -52,59 +53,36 @@ class DecisionTree(Base):
             train=self._train,
             test=self._test
         )
-        
+
     @logger.catch
     def _train_model(
         self,
         train: pd.DataFrame,
-        max_depth: int,
-        min_samples_split: int,
-        min_samples_leaf: int
-    ) -> DecisionTreeClassifier:
+        max_iter: int,
+        verbose: bool
+    ) -> LogisticRegression:
         """
-        This function is needed to train the decision tree classifier model.
+        This function is needed to train the logistic regression model.
 
         Args:
-            train (pd.DataFrame): The training set that will be used to train the decision tree classifier model.
-            max_depth (int): The max depth of the decision tree model.
-            min_samples_split (int): The minimum amount of samples per split.
-            min_samples_leaf (int): The minimum amount of samples per leaf.
+            train (pd.DataFrame): The training dataframe that needs to be trained on.
+            max_iter (int): The maximum number of iterations to be run.
+            verbose (bool): Whether to print out logs.
         
         Returns:
-            DecisionTreeClassifier: The trained decision tree classifier model.
+            LogisticRegression: The trained logistic regression model.
         """
 
         labels_train = train['y_true'].values
 
-        clf = DecisionTreeClassifier(
-            criterion="log_loss", 
-            max_depth=max_depth, 
-            min_samples_split=min_samples_split, 
-            min_samples_leaf=min_samples_leaf
+        clf = LogisticRegression(
+            max_iter=max_iter,
+            verbose=verbose
         )    
 
         clf = clf.fit(self._train_sparse_matrix, labels_train)
 
         return clf
-
-    @logger.catch()
-    def _load_vectorizer(
-        self
-    ) -> Union[CountVectorizer, TfidfVectorizer]:
-        """
-        This function is needed to load the trained vectorizer model.
-
-        Args:
-            None
-        
-        Returns:
-            Union[CountVectorizer, TfidfVectorizer]: The trained vectorizer model
-        """
-        
-        with open(self._vectorizer_dir_path, 'rb') as f:
-            vectorizer = pickle.load(f)
-
-        return vectorizer
 
     @logger.catch
     def _vectorize(
@@ -130,17 +108,36 @@ class DecisionTree(Base):
         test_sparse_matrix = self._vectorizer.transform(test_corpus)
 
         return train_sparse_matrix, test_sparse_matrix
-    
+
+    @logger.catch()
+    def _load_vectorizer(
+        self
+    ) -> Union[CountVectorizer, TfidfVectorizer]:
+        """
+        This function is needed to load the trained vectorizer model.
+
+        Args:
+            None
+        
+        Returns:
+            Union[CountVectorizer, TfidfVectorizer]: The trained vectorizer model
+        """
+        
+        with open(self._vectorizer_dir_path, 'rb') as f:
+            vectorizer = pickle.load(f)
+
+        return vectorizer
+
     @logger.catch
     def _save_model(
         self,
-        model: DecisionTreeClassifier
+        model: LogisticRegression
     ) -> None:
         """
-        This function is needed to save the trained decision tree model.
+        This function is needed to save the trained logistic regression model.
 
         Args:
-            model (DecisionTreeClassifier): The trained decision tree model that will be saved. 
+            model (LogisticRegression): The trained logistic regression model that needs to be saved.
         
         Returns:
             None
@@ -148,47 +145,47 @@ class DecisionTree(Base):
 
         os.makedirs(f"{self._checkpoint_dir_path}/{self._experiment_name}", exist_ok=True)
         
-        with open(f'{self._checkpoint_dir_path}/{self._experiment_name}/decision_tree.pkl', 'wb') as f:
+        with open(f'{self._checkpoint_dir_path}/{self._experiment_name}/logistic_regression.pkl', 'wb') as f:
             pickle.dump(model, f)
 
     @logger.catch
     def _load_model(
         self
-    ) -> DecisionTreeClassifier:
+    ) -> LogisticRegression:
         """
-        This function is needed to load the trained decision tree model.
+        This function is needed to load the trained logistic regression model.
 
         Args:
             None
         
         Returns:
-            DecisionTreeClassifier: The trained decision tree model that has been loaded.
+            LogisticRegression: The trained logistic regression model.
         """
 
-        with open(f'{self._checkpoint_dir_path}/{self._experiment_name}/decision_tree.pkl', 'rb') as f:
-            decisiontree = pickle.load(f)
+        with open(f'{self._checkpoint_dir_path}/{self._experiment_name}/logistic_regression.pkl', 'rb') as f:
+            logistic_regression = pickle.load(f)
             
-        return decisiontree
+        return logistic_regression
 
     @logger.catch 
     def _evaluate_test(
         self,
-        model: DecisionTreeClassifier,
+        model: LogisticRegression,
         test: pd.DataFrame,
         labels: List[str]
     ) -> pd.DataFrame:
         """
-        This function is needed to evaluate the decision tree model using the test set.
+        This funtion is needed to evaluate the test dataframe.
 
         Args:
-            model (DecisionTreeClassifier): The trained decision tree model that will be evaluated.
-            test (pd.DataFrame): The test set that will be used to evaluate the decision tree model.
-            labels (List[str]): The list of labels that will be used to evaluate the decision tree model.
+            model (LogisticRegression): The trained logistic regression model.
+            test (pd.DataFrame): The test dataframe that needs to be evaluated.
+            labels (List[str]): The list of labels.
         
         Returns:
-            pd.DataFrame: The evaluated
+            pd.DataFrame: The evaluated test dataframe.
         """
-        
+
         y_pred = model.predict(self._test_sparse_matrix)
         test["y_pred"] = y_pred
 
@@ -200,22 +197,22 @@ class DecisionTree(Base):
         utterance: str
     ) -> str:
         """
-        This function is needed to make predictions using the decision tree model.
+        This function is needed to make inferences using the trained logistic regression model.
 
-        Args:   
-            utterance (str): The utterance that will be used to make predictions.
+        Args:
+            utterance (str): The utterance that needs to be classified.
         
         Returns:
-            str: The predicted dialog
+            str: The predicted dialogue act.
         """
 
-        decisiontree = self._load_model()
+        logisticregression = self._load_model()
 
-        utterance = utterance.lstrip()
-        
+        utterance = utterance.lower().lstrip()
+
         sparse_matrix = self._vectorizer.transform([utterance])
 
-        y_preds_proba = decisiontree.predict_proba(sparse_matrix)
+        y_preds_proba = logisticregression.predict_proba(sparse_matrix)
 
         index_array = np.argmax(y_preds_proba, axis=-1)
 
@@ -224,21 +221,21 @@ class DecisionTree(Base):
         print(f"""act: {categorical_pred}, probability: {y_preds_proba[0][index_array]}\n""")
 
         return categorical_pred
-    
+
     @logger.catch
     def evaluate(
         self
     ) -> None:
         """
-        This function is needed to evaluate the decision tree model using the test set.
+        This function is needed to evaluate the logistic regression model.
 
-        Args:   
-            None    
+        Args:
+            None
         
         Returns:
             None
         """
-
+        
         decisiontree = self._load_model()
         
         results = self._evaluate_test(
@@ -256,32 +253,29 @@ class DecisionTree(Base):
     @logger.catch
     def run(
         self,
-        max_depth: int,
-        min_samples_split: int,
-        min_samples_leaf: int
+        max_iter: int,
+        verbose: bool
     ) -> None:
         """
-        This function is needed to train the decision tree model.
+        This function is needed to train the logistic regression model.
 
         Args:
-            max_depth (int): The max depth of the decision tree model.
-            min_samples_split (int): The minimum amount of samples per split.
-            min_samples_leaf (int): The minimum amount of samples per leaf.
+            max_iter (int): The maximum number of iterations to be run.
+            verbose (bool): Whether to print out logs.
         
         Returns:
             None
         """
-
-        decisiontree = self._train_model(
+        
+        logisticregression = self._train_model(
             train=self._train,
-            max_depth=max_depth,
-            min_samples_split=min_samples_split,
-            min_samples_leaf=min_samples_leaf
+            max_iter=max_iter,
+            verbose=verbose
         )
 
-        self._save_model(model=decisiontree)
+        self._save_model(model=logisticregression)
 
-@decisiontree_app.command()
+@logisticreg_app.command()
 def evaluate(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
     vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
@@ -290,7 +284,7 @@ def evaluate(
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
 
-    DecisionTree(
+    LogisticRegressionClassifier(
         dataset_dir_path=dataset_dir_path,
         vectorizer_dir_path=vectorizer_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
@@ -298,7 +292,7 @@ def evaluate(
         deduplication=deduplication
     ).evaluate()
 
-@decisiontree_app.command()
+@logisticreg_app.command()
 def inference(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
     vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
@@ -307,7 +301,7 @@ def inference(
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
     
-    decisiontree = DecisionTree(
+    logisticregression = LogisticRegressionClassifier(
         dataset_dir_path=dataset_dir_path,
         vectorizer_dir_path=vectorizer_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
@@ -319,29 +313,26 @@ def inference(
 
         utterance = input("Enter your utterance: ")
 
-        decisiontree.inference(utterance=utterance.lower())
+        logisticregression.inference(utterance=utterance.lower())
 
-@decisiontree_app.command()
+@logisticreg_app.command()
 def train(
     dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
     vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
     checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.")] = None,
-    max_depth: Annotated[int, typer.Option(help="The max depth of the decision tree model.")] = None,
-    min_samples_split: Annotated[int, typer.Option(help="The minimum amount of samples per split.")] = None,
-    min_samples_leaf: Annotated[int, typer.Option(help="The minimum amount of samples per leaf")] = None,
+    max_iter: Annotated[int, typer.Option(help="The maximum number of iterations to be run.")] = 100,
+    verbose: Annotated[bool, typer.Option(help="Whether to print out logs.")] = False,
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
     
-    DecisionTree(
+    LogisticRegressionClassifier(
         dataset_dir_path=dataset_dir_path,
         vectorizer_dir_path=vectorizer_dir_path,
         checkpoint_dir_path=checkpoint_dir_path,
         experiment_name=experiment_name,
         deduplication=deduplication
     ).run(
-        max_depth=max_depth,
-        min_samples_split=min_samples_split,
-        min_samples_leaf=min_samples_leaf
+        max_iter=max_iter,
+        verbose=verbose  
     )
-
