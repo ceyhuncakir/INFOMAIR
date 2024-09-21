@@ -28,6 +28,61 @@ The dialog_acts.dat data can be originally be found on the following site:
 https://www.microsoft.com/en-us/research/event/dialog-state-tracking-challenge/
 ```
 
+# Model Checkpoints
+When you train any model that needs to be saved in a data directory, it’s important to always provide the correct path. For example:
+
+Assume we have the following project structure:
+```
+INFOMAIR/
+├── 1a/
+│   ├── data/
+│   │   └── dialog_acts.dat
+│   ├── src/
+├── 1b/
+```
+
+Now, let's say we want to train a vectorizer model and save it within this structure. Here's an example pipenv command:
+
+```
+pipenv run 1a vectorizer build --dataset-dir-path ~/INFOMAIR/1a/data/dialog_acts.dat --vectorizer-type tfidf --checkpoint-dir-path ~/INFOMAIR/1a/data/vectorizer
+```
+
+After running the above command, the project structure will look like this:
+
+```
+INFOMAIR/
+├── 1a/
+│   ├── data/
+│   │   ├── vectorizer/
+│   │   │   └── tfidf_vectorizer.pkl
+│   │   └── dialog_acts.dat
+│   ├── src/
+├── 1b/
+```
+
+Next, assume you want to train a machine learning model (such as a decision tree) using the saved vectorizer. You can use the following pipenv command:
+
+```
+pipenv run 1a decisiontree train --dataset-dir-path ~/INFOMAIR/1a/data/dialog_acts.dat --vectorizer-dir-path ~/INFOMAIR/1a/data/vectorizer/tfidf_vectorizer.pkl --checkpoint-dir-path ~/INFOMAIR/1a/data/decisiontree --experiment-name decisiontree-tfidf --max-depth 15 --min-samples-split 20 --min-samples-leaf 100 --no-deduplication
+```
+
+After running this command, the project structure will be updated to:
+```
+INFOMAIR/
+├── 1a/
+│   ├── data/
+│   │   ├── vectorizer/
+│   │   │   └── tfidf_vectorizer.pkl
+│   │   ├── decisiontree/
+│   │   │   └── decisiontree-tfidf/
+│   │   │       └── decision_tree.pkl
+│   │   └── dialog_acts.dat
+│   ├── src/
+├── 1b/
+```
+
+This is just one example. Always ensure you use the correct paths when running commands.
+
 # Usage
 Before actually using the act classifiers you should note that for the machine learning models you first need to train the models in order to do any real predictions on the test set. For inference this is the same case. Before using any machine learning model, the dataset must first be vectorized using a chosen vectorizer. It is recommended to fit the vectorizer before applying it to the model. To build your own vectorizer, you can run the following pipenv command.
 
