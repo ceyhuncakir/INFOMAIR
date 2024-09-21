@@ -1,6 +1,19 @@
 # INFOMAIR
-This project is about the INFOMAIR group assignment.
+In our group assignment, we are developing a **text-based dialog system** for restaurant recommendations. The system will interact with users to gather their preferences and suggest suitable restaurants from a database. To do this, we will use an existing dataset of annotated dialogs (**dialog_acts.dat**) in the restaurant domain.
 
+## Project Structure
+
+The project is divided into three key parts:
+
+### 1. Utterance Classification
+We will apply **classifiers** both rule based and machine learning models to categorize user utterances based on their role in the dialog (e.g., request, confirmation, etc.).
+
+### 2. Dialog Manager
+We will construct a **dialog transition model** and implement a dialog manager to facilitate seamless interactions between the user and the system.
+
+### 3. Reasoning and Configuration
+We will add a **reasoning component** to the system and implement configurable variations. This will prepare us for Part 2, where we will conduct a **user evaluation experiment** to assess the system’s usability and performance.
+        
 # Dependecies
 Bofore installing the project for usage, please make sure you have installed the following dependecies:
 
