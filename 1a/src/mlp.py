@@ -438,7 +438,7 @@ def inference(
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
 
     mlp = MultiLayerPerceptron(
@@ -463,7 +463,7 @@ def evaluate(
     checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
     experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
     device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
     
     MultiLayerPerceptron(
@@ -485,7 +485,7 @@ def train(
     eta: Annotated[float, typer.Option(help="The learning rate you want to use.")] = None,
     batch_size: Annotated[int, typer.Option(help="The amount of batch size you want to set the dataloaders for")] = None,
     epochs: Annotated[int, typer.Option(help="The amount of epochs you want to run the mlp for.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the xgboost model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = None,
 ) -> None:
     
     MultiLayerPerceptron(
