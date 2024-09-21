@@ -221,9 +221,7 @@ class DecisionTree(Base):
 
         categorical_pred = self._labels[index_array[0]]
 
-        print(f"""act: {categorical_pred}, probability: {y_preds_proba[0][index_array]}\n""")
-
-        return categorical_pred
+        return categorical_pred, y_preds_proba[0][index_array]
     
     @logger.catch
     def evaluate(
@@ -319,7 +317,9 @@ def inference(
 
         utterance = input("Enter your utterance: ")
 
-        decisiontree.inference(utterance=utterance.lower())
+        categorical_pred, probability = decisiontree.inference(utterance=utterance.lower())
+
+        print(f"act: {categorical_pred}, probability: {probability}\n")
 
 @decisiontree_app.command()
 def train(

@@ -31,18 +31,22 @@ class MLP(nn.Module):
     ) -> None:
         super().__init__()
 
-        self.linear1 = nn.Linear(in_features=feature_shape, out_features=128)
-        self.relu = nn.ReLU()
-        self.linear2 = nn.Linear(in_features=128, out_features=num_classes)
+        self.model = nn.Sequential(
+            nn.Linear(feature_shape, 256),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, num_classes)
+        )
 
     def forward(
         self, 
         x
     ) -> torch.Tensor:
         
-        x = self.linear1(x)
-        x = self.relu(x)
-        x = self.linear2(x)
+        x = self.model(x)
         return x
 
 class MLPDataset(Dataset):
@@ -64,9 +68,7 @@ class MLPDataset(Dataset):
         idx: int
     ) -> Tuple[torch.Tensor, torch.Tensor]:
 
-        sparse_matrix, labels = self._df.iloc[idx, 3], self._df.iloc[idx, 4:]
-
-        label = np.argmax(labels)
+        sparse_matrix, label = self._df.iloc[idx, 3], self._df.loc[idx, 'y_true']
 
         return {"inputs": torch.tensor(sparse_matrix, dtype=torch.float32), "labels": torch.tensor(label, dtype=torch.long)}
 
@@ -111,9 +113,6 @@ class MultiLayerPerceptron(Base):
         self._train['dense_matrix'] = self._train_sparse_matrix.toarray().tolist()
         self._test['dense_matrix'] = self._test_sparse_matrix.toarray().tolist()
 
-        self._train = pd.concat([self._train, pd.get_dummies(self._train['act'])], axis=1)
-        self._test = pd.concat([self._test, pd.get_dummies(self._test['act'])], axis=1)
-
         self._model_train, self._model_validation = self._split_train(df=self._train)
 
     @logger.catch
@@ -140,7 +139,7 @@ class MultiLayerPerceptron(Base):
         val_dataset = MLPDataset(df=val_set)
 
         train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
         device = self._device
 
         model = MLP(feature_shape=len(self._vectorizer.vocabulary_), num_classes=len(self._labels)).to(device)
@@ -157,6 +156,7 @@ class MultiLayerPerceptron(Base):
                 
                 inputs, labels = batch['inputs'].to(device), batch['labels'].to(device)
 
+                # feed forward
                 output = model(inputs)
                 
                 loss = loss_fn(output, labels)
@@ -228,6 +228,7 @@ class MultiLayerPerceptron(Base):
         model.eval()
 
         y_preds = []
+        y_true = []
 
         with torch.no_grad():
 
@@ -237,13 +238,16 @@ class MultiLayerPerceptron(Base):
 
                 output = model(inputs)
 
-                preds = torch.argmax(output, dim=1)
+                pred_proba = F.softmax(output, dim=1)
+
+                preds = torch.argmax(pred_proba, dim=1)
 
                 y_preds.extend(preds.cpu().tolist())
+                y_true.extend(labels.cpu().tolist())
 
-        test_set['y_pred'] = y_preds
+        df = pd.concat([pd.Series(y_true, name='y_true'), pd.Series(y_preds, name='y_pred')], axis=1)
 
-        return test_set
+        return df
 
     @logger.catch()
     def _load_vectorizer(
@@ -351,7 +355,7 @@ class MultiLayerPerceptron(Base):
     def inference(
         self,
         text: str
-    ) -> None:
+    ) -> Tuple[str, np.ndarray]:
         """
         This function is needed to do inference.
 
@@ -373,7 +377,11 @@ class MultiLayerPerceptron(Base):
 
             output = model(sparse_matrix_tensor)
 
-            print(f"""act: {self._labels[torch.argmax(output, dim=1).item()]}\n""")
+            pred_proba = F.softmax(output, dim=1)
+
+            index_array = np.argmax(pred_proba.cpu().numpy())    
+
+            return self._labels[torch.argmax(pred_proba, dim=1).item()], pred_proba.cpu().numpy()[0][index_array]
 
     @logger.catch
     def evaluate(
@@ -454,7 +462,9 @@ def inference(
 
         text = input("Enter your utterance: ")
 
-        mlp.inference(text=text.lower())
+        categorical_pred, probability = mlp.inference(text=text.lower())
+
+        print(f"""act: {categorical_pred}, probability: {probability}\n""")
 
 @mlp_app.command()
 def evaluate(

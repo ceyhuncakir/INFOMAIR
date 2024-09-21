@@ -195,7 +195,7 @@ class LogisticRegressionClassifier(Base):
     def inference(
         self,
         utterance: str
-    ) -> str:
+    ) -> Tuple[str, float]:
         """
         This function is needed to make inferences using the trained logistic regression model.
 
@@ -218,9 +218,7 @@ class LogisticRegressionClassifier(Base):
 
         categorical_pred = self._labels[index_array[0]]
 
-        print(f"""act: {categorical_pred}, probability: {y_preds_proba[0][index_array]}\n""")
-
-        return categorical_pred
+        return categorical_pred, y_preds_proba[0][index_array]
 
     @logger.catch
     def evaluate(
@@ -236,10 +234,10 @@ class LogisticRegressionClassifier(Base):
             None
         """
         
-        decisiontree = self._load_model()
+        logisticregression = self._load_model()
         
         results = self._evaluate_test(
-            model=decisiontree,
+            model=logisticregression,
             test=self._test,
             labels=self._labels
         )
@@ -313,7 +311,9 @@ def inference(
 
         utterance = input("Enter your utterance: ")
 
-        logisticregression.inference(utterance=utterance.lower())
+        categorical_pred, probability = logisticregression.inference(utterance=utterance.lower())
+
+        print(f"""act: {categorical_pred}, probability: {probability}\n""")
 
 @logisticreg_app.command()
 def train(
