@@ -14,6 +14,7 @@ loguru = "*"
 torch = "*"
 torchvision = "*"
 torchaudio = "*"
+spacy = "*"
 
 [dev-packages]
 
