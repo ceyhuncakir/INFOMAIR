@@ -142,6 +142,34 @@ class DialogManager(Base):
         else:
             return 
 
+    def _rule_based(
+        self,
+        utterance: str
+    ) -> str:
+    
+        keyword_matching = {
+                "ack": ["okay", "kay", "okay and", "okay uhm"],
+                "request": ["phone number", "address", "postcode", "phone", "post code"],
+                "repeat": ["repeat", "again", "repeat that", "go back"],
+                "reqmore": ["more"],
+                "restart": ["start over", "reset", "start again"],
+                "negate": ["no"],
+                "hello": ["hi", "hello"], 
+                "deny": ["wrong", "dont want"],
+                "confirm": ["is it", "is that", "does it", "is there a", "do they"],
+                "reqalts": ["how about", "what about", "anything else", "are there", "uh is", "is there", "any more"]
+            }
+
+        for act, keyword in keyword_matching.items():
+
+            for keys in keyword:
+                if keys in utterance or keys == utterance:
+                    return act
+                else:
+                    continue
+
+        return None
+
     def _reset(
         self
     ) -> str:
@@ -175,15 +203,18 @@ class DialogManager(Base):
         print("\nturn index:", turn_index)
         print("system:", resp)
 
-        # print(self._labels)
-
         while True:
 
             utterance = input("user: ")
 
-            categorical_pred, _ = self.model.inference(utterance=utterance.lower()) 
+            categorical_pred = self._rule_based(utterance=utterance.lower())
+            
+            if isinstance(categorical_pred, str):
+                resp, turn_index = self._step(state=categorical_pred, utterance=utterance.lower())
+            else:
 
-            resp, turn_index = self._step(state=categorical_pred, utterance=utterance)
+                categorical_pred, _ = self.model.inference(utterance=utterance.lower()) 
+                resp, turn_index = self._step(state=categorical_pred, utterance=utterance.lower())
             
             print("turn index:", turn_index)
             print("system:", resp)
