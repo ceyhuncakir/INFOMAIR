@@ -17,6 +17,7 @@ torchaudio = "*"
 spacy = "*"
 openai = "*"
 python-dotenv = "*"
+levenshtein = "*"
 
 [dev-packages]
 
