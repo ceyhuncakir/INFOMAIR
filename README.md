@@ -181,12 +181,22 @@ TO run the Trained MLP model in inference run the following pipenv command
 ```
 pipenv run 1a mlp inference --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --deduplication [DEDUPLICATION FLAG]
 ```
+
 # 1B
+## Logistic Regression based dialogue
+### inference
+To use the Logistic Regression based dialogue manager, run the following command:
+```
+pipenv run 1b dialog_manager inference
+```
 
-### MLP based dialogue
+### Evaluation
+To evaluate the dialogue systen, run the following command:
+```
+pipenv run 1b dialog_manager evaluate
+```
 
-
-### SVM based dialogue
+## SVM based dialogue
 To use the dialogue manager based on an alternative SVM classifier, run `dialog.py` from the `svm` directory:
 
 ```
