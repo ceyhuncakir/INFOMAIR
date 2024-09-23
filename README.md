@@ -21,13 +21,13 @@ Bofore installing the project for usage, please make sure you have installed the
 pipenv
 ```
 
-You can install the dependecie by running the following pip3 command 
+You can install the dependecies by running the following pip3 command: 
 
 ```
 pip3 install pipenv
 ```
 
-# Instalation
+# Installation
 When the right dependecies have been installed, run the following command inside the project directory:
 
 ```
@@ -136,7 +136,7 @@ To evaluate the decision tree model run the following pipenv command:
 pipenv run 1a decisiontree evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
 ```
 
-### inference
+### Inference
 To run the inference on the trained decision tree model run the following pipenv commnad:
 ```
 pipenv run 1a decisiontree inference --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
@@ -157,7 +157,7 @@ To evaluate the Logistic Regression model run the following pipenv command:
 pipenv run 1a logistic_regression evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
 ```
 
-### inference
+### Inference
 To run the inference on the trained Logistic Regression model run the following pipenv commnad:
 ```
 pipenv run 1a logistic_regression --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
@@ -184,14 +184,14 @@ pipenv run 1a mlp inference --dataset-dir-path [DATASET DIRECTORY PATH] --vector
 
 # 1B
 ## Logistic Regression based dialogue
-### inference
+### Inference
 To use the Logistic Regression based dialogue manager, run the following command:
 ```
 pipenv run 1b dialog_manager inference
 ```
 
 ### Evaluation
-To evaluate the dialogue systen, run the following command:
+To evaluate the dialogue system, run the following command:
 ```
 pipenv run 1b dialog_manager evaluate
 ```
@@ -204,7 +204,7 @@ python 1b/svm/dialog.py
 ```
 
 
-# Constributors
+# Contributors
 ```
 Ceyhun Cakir (c.cakir@students.uu.nl)
 Simon Hart (s.f.hart@students.uu.nl)
