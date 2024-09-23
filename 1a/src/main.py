@@ -1,6 +1,6 @@
 import typer
 
-from statistics import statistics_app
+from statistics_dataset import statistics_app
 from baseline_1 import baseline_1_app
 from baseline_2 import baseline_2_app
 from vectorizer import vectorizer_app

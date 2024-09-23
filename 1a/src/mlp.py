@@ -278,12 +278,13 @@ class MultiLayerPerceptron(Base):
                 fancybox=True, shadow=True, ncol=2)
 
         # Add a title
-        plt.title(f'Training {"duplication" if self._deduplication else None}', fontsize=14, fontweight='bold')
+        plt.title(f'Training {"without duplicate entries" if self._deduplication else "with duplicate entries"}', fontsize=14, fontweight='bold')
 
         # Improve layout to make room for the legend
         fig.tight_layout()
 
         # Save the plot as a file
+        os.makedirs(self._checkpoint_dir_path + "/" + self._experiment_name, exist_ok=True)
         plt.savefig(f"{self._checkpoint_dir_path}/{self._experiment_name}/training.png", dpi=300, bbox_inches='tight')
 
     @logger.catch

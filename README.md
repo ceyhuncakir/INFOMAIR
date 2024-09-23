@@ -105,13 +105,13 @@ To run any of the baselines run the following command respectively to each basel
 ### Evaluation
 To run evaluation use the following pipenv command:
 ```
-pipenv run a1 [BASELINE E.G: baseline_1, baseline_2] evaluate --dataset_dir_path [DIALOG DATASET PATH]
+pipenv run 1a [BASELINE E.G: baseline_1, baseline_2] evaluate --dataset_dir_path [DIALOG DATASET PATH]
 ```
 
 ### Inference 
 To run inference use the following pipenv command:
 ```
-pipenv run a1 [BASELINE E.G: baseline_1, baseline_2] inference --dataset_dir_path [DIALOG DATASET PATH]
+pipenv run 1a [BASELINE E.G: baseline_1, baseline_2] inference --dataset_dir_path [DIALOG DATASET PATH]
 ```
 
 ## Vectorizer
@@ -133,13 +133,13 @@ pipenv run 1a decisiontree train --dataset-dir-path [DATASET DIRECTORY PATH] --v
 To evaluate the decision tree model run the following pipenv command:
 
 ```
-pipenv run a1 decisiontree evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a decisiontree evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
 ```
 
 ### inference
 To run the inference on the trained decision tree model run the following pipenv commnad:
 ```
-pipenv run a1 decisiontree inference --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a decisiontree inference --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
 ```
 
 ## Logistic Regression (ml)
@@ -147,39 +147,39 @@ pipenv run a1 decisiontree inference --dataset-dir-path [DATASET DIRECTORY PATH]
 To train the Logistic Regression model run the following command:
 
 ```
-pipenv run a1 logistic_regression train --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] ----max-iter [MAXIMUM AMOUNT OF ITERATIONS] --verbose [BOOL] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a logistic_regression train --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] ----max-iter [MAXIMUM AMOUNT OF ITERATIONS] --verbose [BOOL] --deduplication [DEDUPLICATION FLAG]
 ```
 
 ### Evaluation
 To evaluate the Logistic Regression model run the following pipenv command:
 
 ```
-pipenv run a1 logistic_regression evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a logistic_regression evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
 ```
 
 ### inference
 To run the inference on the trained Logistic Regression model run the following pipenv commnad:
 ```
-pipenv run a1 logistic_regression --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a logistic_regression --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --deduplication [DEDUPLICATION FLAG]
 ```
 
 ## MLP (ml)
 ### Train
 To train the MLP model run the following pipenv command:
 ```
-pipenv run a1 mlp train --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --eta [LEARNING RATE] --batch-size [BATCH SIZE] --epochs [EPOCHS] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a mlp train --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --eta [LEARNING RATE] --batch-size [BATCH SIZE] --epochs [EPOCHS] --deduplication [DEDUPLICATION FLAG]
 ```
 
 ### Evaluation
 To now evaluate the MLP model run the following command:
 
 ```
-pipenv run a1 mlp evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a mlp evaluate --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --deduplication [DEDUPLICATION FLAG]
 ```
 ### inference
 TO run the Trained MLP model in inference run the following pipenv command
 ```
-pipenv run a1 mlp inference --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --deduplication [DEDUPLICATION FLAG]
+pipenv run 1a mlp inference --dataset-dir-path [DATASET DIRECTORY PATH] --vectorizer-dir-path [VECTORIZER DIRECTORY PATH] --checkpoint-dir-path [CHECKPOINT DIRECTORY PATH] --experiment-name [EXPERIMENT NAME] --device [DEVICE] --deduplication [DEDUPLICATION FLAG]
 ```
 
 # Constributors
