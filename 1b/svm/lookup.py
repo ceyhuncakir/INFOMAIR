@@ -11,5 +11,5 @@ def lookup_restaurant(pricerange=None, area=None, food=None):
         results = results[results['area'] == area.lower()]
     if food:
         results = results[results['food'] == food.lower()]
-    
+
     return results
