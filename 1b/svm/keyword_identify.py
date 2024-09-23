@@ -2,7 +2,7 @@ import pandas as pd
 from Levenshtein import distance
 
 def identify_keywords(sentence):
-    df = pd.read_csv('data/restaurant_info.csv')
+    df = pd.read_csv('1b/data/restaurant_info.csv')
 
     common_words = ['I', 'the', 'an', 'in', 'is', 'for', 'can', 'have', 'am', 'need', 'want', 'what', 'that', 'this', 'their', 'its', 'yes', 'no', 'eat', 'else']
 

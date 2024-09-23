@@ -6,8 +6,8 @@ import os
 # To do: Allow for any area, any food, any pricerange
 
 if __name__ == "__main__":
-    vectorizer = joblib.load(os.path.join('models', 'tfidf_vectorizer.pkl'))
-    classifier = joblib.load(os.path.join('models', 'svm_classifier.pkl'))
+    vectorizer = joblib.load(os.path.join('1b/svm/models', 'tfidf_vectorizer.pkl'))
+    classifier = joblib.load(os.path.join('1b/svm/models', 'svm_classifier.pkl'))
     
     preferences = {'area': None, 'food': None, 'pricerange': None}
     req_idx = 0

@@ -2,7 +2,7 @@ import pandas as pd
 
 def lookup_restaurant(pricerange=None, area=None, food=None):
 
-    df = pd.read_csv('data/restaurant_info.csv')
+    df = pd.read_csv('1b/data/restaurant_info.csv')
     results = df
 
     if pricerange:
