@@ -23,7 +23,6 @@ class Baseline_1(Base):
     ) -> None: 
         
         self._dataset_dir_path = dataset_dir_path
-        self._deduplication = deduplication
         _, self.test, self.labels, self.majority = self.process(
             deduplication=False
         )

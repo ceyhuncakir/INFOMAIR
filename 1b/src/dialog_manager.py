@@ -27,6 +27,11 @@ class DialogManager(Base):
         restaurant_csv: str
     ) -> None:
         
+
+         # todo return results when no results are found for price range and food
+         # fix this becacuse it puts any to any other field # identify_keywords # any 
+         # _levenshtein_check find all values that are not correct and display them all
+
         self.model_name = model_name
         self.dataset_dir_path = dataset_dir_path
         self.vectorizer_dir_path = vectorizer_dir_path
@@ -40,8 +45,11 @@ class DialogManager(Base):
         self._labels = self.model._labels
 
         self._restaurant_results = None
+        # current preferences
         self._buffer = Data()
+        # confirmed preferences
         self._current = Data()
+        # corrected preferences
         self._corrected_words_buffer = Data()
         self._turn_index = 0
         self._state = 9 
@@ -84,6 +92,13 @@ class DialogManager(Base):
             print("speech act: request(phone)")
             return f"The phone number of {restaurant_name} is {phone_number}"
 
+        if "address" in utterance:  
+
+            address = first_row['addr']
+
+            print("speech act: request(address)")
+            return f"Sure , restaurant {restaurant_name} is on {address}"
+
     def _goodbye(
         self
     ) -> str:
@@ -117,20 +132,19 @@ class DialogManager(Base):
 
         flag, focus = self._check_keywords(keywords=keywords, data=self._corrected_words_buffer)  
 
-        print(focus)
-        print(keywords)
-        print(self._current)
-
-        # todo change value from key focus to key keywords only when the value is not none and the value is not the same as the current value
-
-        for key, value in keywords.items():
+        # fill the buffer with the extracted preferences
+        for key, value in focus.items():
             if key != "task" and key != "type":
-                if value == None:
-                    keywords[key] = getattr(self._current, key)
-
-                keywords[key] = getattr(self._current, key)
+                if value[1] != None:
+                    keywords[key] = self._current.__dict__[key]
             else:
                 continue
+
+        # fills nan values in keywords
+        for key, value in keywords.items(): 
+            if key != "task" and key != "type":
+                if value == None:
+                    keywords[key] = self._current.__dict__[key] 
                 
         buffer = self._slot_filling(data=self._buffer, keywords=keywords)
 
@@ -361,7 +375,7 @@ class DialogManager(Base):
             "area": None
         }
 
-        # fix this becacuse it puts any to any other field
+        # fix this becacuse it puts any to any other field # identify_keywords # any 
         if utterance == "any":
             keywords['area'] = "dontcare"
             keywords['pricerange'] = "dontcare"
@@ -369,7 +383,7 @@ class DialogManager(Base):
             return keywords  
 
         for word in words:
-            
+                                
             # check if the word is in the list of keywords
             if "priced" == word:
                 selected_word = words[words.index(word) - 1]
@@ -479,7 +493,6 @@ class DialogManager(Base):
         while True:
 
             # todo add confirm state
-
             # print(self._labels)
 
             utterance = input("user: ")
@@ -525,11 +538,3 @@ def inference(
         deduplication=deduplication,
         restaurant_csv=restaurant_csv
     ).inference()
-
-    while True:
-
-        utterance = input("Enter your utterance: ")
-
-        categorical_pred, probability = dialog_manager.inference(utterance=utterance.lower())
-
-        print(f"""act: {categorical_pred}, probability: {probability}\n""")

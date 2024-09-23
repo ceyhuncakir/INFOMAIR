@@ -3,11 +3,6 @@ from typing import List
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
-    precision_score,
-    recall_score,
-    f1_score,
-    accuracy_score,
-    confusion_matrix,
     classification_report
 )
 
