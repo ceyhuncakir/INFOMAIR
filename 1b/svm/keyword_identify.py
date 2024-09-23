@@ -4,7 +4,7 @@ from Levenshtein import distance
 def identify_keywords(sentence):
     df = pd.read_csv('data/restaurant_info.csv')
 
-    common_words = ['the', 'an', 'in', 'is', 'for', 'can', 'have', 'am', 'need', 'what', 'that', 'this', 'their', 'its', 'yes', 'no']
+    common_words = ['I', 'the', 'an', 'in', 'is', 'for', 'can', 'have', 'am', 'need', 'want', 'what', 'that', 'this', 'their', 'its', 'yes', 'no', 'eat', 'else']
 
     keyword_dict = {
     'pricerange': df['pricerange'].dropna().astype(str).unique(), 

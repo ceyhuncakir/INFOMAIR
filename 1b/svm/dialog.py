@@ -10,6 +10,7 @@ if __name__ == "__main__":
     classifier = joblib.load(os.path.join('models', 'svm_classifier.pkl'))
     
     preferences = {'area': None, 'food': None, 'pricerange': None}
+    req_idx = 0
 
     print("system: Hello, welcome to the Cambridge restaurant system! You can ask for restaurants by area, price range, or food type. How may I help you?") # STATE 1
 
@@ -42,12 +43,10 @@ if __name__ == "__main__":
         
         #
         # All preferences are given
-        # (State 6, 9)
+        # (State 6, 7, 8, 9)
         #
 
         elif all(preferences.values()):
-            req_idx = 0
-            
             restaurant = results.iloc[req_idx]['restaurantname']
             food = results.iloc[req_idx]['food']
             pricerange = results.iloc[req_idx]['pricerange']
@@ -55,18 +54,21 @@ if __name__ == "__main__":
             address = results.iloc[req_idx]['addr']
 
             if dialog_act == 'reqmore':
-                req_idx += 1   
-            
-            elif dialog_act == 'reqalts':
-                print(f"system: You are looking for a {preferences['food']} restaurant right?") 
-
-            elif dialog_act == 'request': # STATE 9
-                if 'phone' in user_input:
-                    print(f'The phone number of {restaurant} is {phone}')
-                elif 'address' in user_input:
-                    print(f'Sure, {restaurant} is on {address}')
+                if len(results.index) > 1:
+                    req_idx += 1
                 else:
-                    print('system: Do you want to know their address or phone number?')
+                    print(f"system: There are no other restaurants serving {preferences['food']} food that meet your criteria") # STATE 7    
+            
+            elif dialog_act == 'reqalts': 
+                print(f"system: You are looking for a {preferences['food']} restaurant right?") # STATE 8
+
+            elif dialog_act == 'request': 
+                if 'phone' in user_input:
+                    print(f'The phone number of {restaurant} is {phone}') # STATE 9
+                elif 'address' in user_input:
+                    print(f'Sure, {restaurant} is on {address}') # STATE 9
+                else:
+                    print('system: Do you want to know their address or phone number?') 
 
             else:
                 print(f"system: {restaurant} is a great choice serving {food} food in the {pricerange} price range.") # STATE 6
