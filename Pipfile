@@ -18,6 +18,7 @@ spacy = "*"
 openai = "*"
 python-dotenv = "*"
 levenshtein = "*"
+seaborn = "*"
 
 [dev-packages]
 

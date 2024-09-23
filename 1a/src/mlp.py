@@ -17,6 +17,8 @@ import pickle
 from typing_extensions import Annotated
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from helpers.base import Base
 from helpers.evaluation import Evaluate
@@ -146,6 +148,12 @@ class MultiLayerPerceptron(Base):
         optimizer = torch.optim.Adam(model.parameters(), lr=eta)
         loss_fn = torch.nn.CrossEntropyLoss()
 
+        train_accuracy_list = []
+        val_accuracy_list = []
+
+        train_loss_list = []
+        val_loss_list = []
+
         for epoch in range(epochs):
 
             model.train()
@@ -174,6 +182,9 @@ class MultiLayerPerceptron(Base):
             mean_train_loss = running_train_loss / len(train_dataset)
             mean_train_accuracy = running_train_correct / len(train_dataset)
 
+            train_accuracy_list.append(mean_train_accuracy)
+            train_loss_list.append(mean_train_loss)
+
             model.eval()
 
             with torch.no_grad():
@@ -192,6 +203,9 @@ class MultiLayerPerceptron(Base):
                 mean_val_loss = running_val_loss / len(val_dataset)
                 mean_val_accuracy = running_val_correct / len(val_dataset)
 
+                val_accuracy_list.append(mean_val_accuracy)
+                val_loss_list.append(mean_val_loss)
+
             print(f"""
             Epoch {epoch + 1}/{epochs},
             Train Loss: {mean_train_loss:.4f}, 
@@ -200,7 +214,77 @@ class MultiLayerPerceptron(Base):
             Val Acc: {mean_val_accuracy:.4f}
             """)
 
+        self.plot_training_validation(
+            train_acc=train_accuracy_list,
+            val_acc=val_accuracy_list,
+            train_loss=train_loss_list,
+            val_loss=val_loss_list
+        )
+
         return model
+
+    @logger.catch
+    def plot_training_validation(
+        self,
+        train_acc: List[float], 
+        val_acc: List[float], 
+        train_loss: List[float], 
+        val_loss: List[float], 
+    ) -> None:
+        """
+        This function is needed to plot the training and validation accuracy and loss.
+
+        Args:
+            train_acc (List[float]): A list of floats defining the training accuracy.
+            val_acc (List[float]): A list of floats defining the validation accuracy.
+            train_loss (List[float]): A list of floats defining the training loss.
+            val_loss (List[float]): A list of floats defining the validation loss.
+
+        Returns:
+            None
+        """
+        
+        # Check that all lists have the same length
+        if not (len(train_acc) == len(val_acc) == len(train_loss) == len(val_loss)):
+            raise ValueError("All input lists must have the same length.")
+        
+        # Set Seaborn style
+        sns.set(style="whitegrid")
+
+        # Get the number of epochs from the length of the lists
+        epochs = np.arange(1, len(train_acc) + 1)
+
+        # Create the plot with Seaborn styling
+        fig, ax1 = plt.subplots(figsize=(10, 6))
+
+        # Plot Training and Validation Loss on the left y-axis
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Loss', color='tab:red', fontsize=12)
+        sns.lineplot(x=epochs, y=train_loss, ax=ax1, marker='o', color='tab:red', label='Train Loss')
+        sns.lineplot(x=epochs, y=val_loss, ax=ax1, marker='s', color='tab:orange', label='Validation Loss', linestyle='--')
+        ax1.tick_params(axis='y', labelcolor='tab:red')
+
+        # Instantiate a second axes that shares the same x-axis
+        ax2 = ax1.twinx()
+
+        # Plot Training and Validation Accuracy on the right y-axis
+        ax2.set_ylabel('Accuracy', color='tab:blue', fontsize=12)
+        sns.lineplot(x=epochs, y=train_acc, ax=ax2, marker='^', color='tab:blue', label='Train Accuracy')
+        sns.lineplot(x=epochs, y=val_acc, ax=ax2, marker='v', color='tab:green', label='Validation Accuracy', linestyle='--')
+        ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+        # Combine all lines for a single legend
+        ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), 
+                fancybox=True, shadow=True, ncol=2)
+
+        # Add a title
+        plt.title(f'Training {"duplication" if self._deduplication else None}', fontsize=14, fontweight='bold')
+
+        # Improve layout to make room for the legend
+        fig.tight_layout()
+
+        # Save the plot as a file
+        plt.savefig(f"{self._checkpoint_dir_path}/{self._experiment_name}/training.png", dpi=300, bbox_inches='tight')
 
     @logger.catch
     def _evaluate_model(
