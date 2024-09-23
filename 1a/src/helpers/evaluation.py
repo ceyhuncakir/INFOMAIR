@@ -68,7 +68,7 @@ class Evaluate:
         Returns:    
             None
         """
-
+        
         confusion_matrix = self._confusion_matrix(
             y_pred=self._dataframe['y_pred'],
             y_true=self._dataframe['y_true']
