@@ -13,5 +13,3 @@ def lookup_restaurant(pricerange=None, area=None, food=None):
         results = results[results['food'] == food.lower()]
     
     return results
-
-print(lookup_restaurant(area="centre", food="british", pricerange='expensive'))

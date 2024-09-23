@@ -24,4 +24,3 @@ def identify_keywords(sentence):
 
     return keywords_found
             
-print(identify_keywords('I want to eat asian oriental in the city centre'))
