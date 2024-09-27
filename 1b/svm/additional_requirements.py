@@ -17,7 +17,8 @@ def append_features():
 def extract_additional_req(sentence):
        
     rules = [
-        ('touristic', {'pricerange': 'cheap', 'foodquality': 'good'}),
+        ('touristic', {'pricerange': 'cheap'}),
+        ('touristic', {'foodquality': 'good'}),
         ('assigned seats', {'crowdedness': 'busy'}),
         ('children', {'lengthofstay': 'short'}),
         ('romantic', {'crowdedness': 'normal'}),
