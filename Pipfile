@@ -27,4 +27,4 @@ python_version = "3.10"
 
 [scripts]
 1a = "python3 1a/src/main.py"
-1b = "python3 1b/src/main.py"
+1b-c = "python3 1b-c/src/main.py"

@@ -169,7 +169,7 @@ class Base:
 
         train, test = self._split_train_test(df=df)
 
-        train["y_true"] = train['act'].apply(lambda x: labels.index(x))
-        test["y_true"] = test['act'].apply(lambda x: labels.index(x))
+        train["y_true"] = train['act']
+        test["y_true"] = test['act']
 
         return train, test, labels, majority

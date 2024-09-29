@@ -44,7 +44,7 @@ class DecisionTree(Base):
         self._experiment_name = experiment_name
 
         self._train, self._test, self._labels, self._majority = self.process(
-            deduplication=False
+            deduplication=deduplication
         )
 
         self._vectorizer = self._load_vectorizer()
@@ -78,7 +78,7 @@ class DecisionTree(Base):
         labels_train = train['y_true'].values
 
         clf = DecisionTreeClassifier(
-            criterion="log_loss", 
+            criterion="gini", 
             max_depth=max_depth, 
             min_samples_split=min_samples_split, 
             min_samples_leaf=min_samples_leaf
@@ -328,9 +328,9 @@ def train(
     vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = os.getcwd() + "/data/vectorizer/tfidf_vectorizer.pkl",
     checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.", callback=path_valid)] = os.getcwd() + "/data/decisiontree",
     experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.", callback=experiment_value)] = "decisiontree-tfidf-dupe",
-    max_depth: Annotated[int, typer.Option(help="The max depth of the decision tree model.")] = 10,
-    min_samples_split: Annotated[int, typer.Option(help="The minimum amount of samples per split.")] = 10,
-    min_samples_leaf: Annotated[int, typer.Option(help="The minimum amount of samples per leaf")] = 10,
+    max_depth: Annotated[int, typer.Option(help="The max depth of the decision tree model.")] = 5,
+    min_samples_split: Annotated[int, typer.Option(help="The minimum amount of samples per split.")] = 5,
+    min_samples_leaf: Annotated[int, typer.Option(help="The minimum amount of samples per leaf")] = 100,
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.", callback=deduplication_value)] = False,
 ) -> None:
     

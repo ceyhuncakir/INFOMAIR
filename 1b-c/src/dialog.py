@@ -8,6 +8,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 import sys
+import typer
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../1a/src')))
 
@@ -15,7 +16,9 @@ from logistic_regression import LogisticRegressionClassifier
 
 # To do: contradicting rules vergelijken
 
-if __name__ == "__main__":
+dialog_manager_app = typer.Typer()
+
+def dialog_manager():
     
     def restart():
         global preferences, additional_requirements, req_idx, state
@@ -52,6 +55,7 @@ if __name__ == "__main__":
     
     while True:
         user_input = input('user: ')
+
         #vec_input = vectorizer.transform([user_input])
         dialog_act = classifier.inference(user_input.lower())[0]
         print(f"dialog act: {dialog_act}")
@@ -206,5 +210,11 @@ if __name__ == "__main__":
                 print('system: Do you want to know their address or phone number?') 
 
         elif state == 10:
-            break   
-        
+            break 
+
+@dialog_manager_app.command()
+# add argument
+def run():
+
+    # add argument
+    dialog_manager()
