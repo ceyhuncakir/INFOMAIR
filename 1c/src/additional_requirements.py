@@ -5,13 +5,13 @@ import os
 np.random.seed(4)
 
 def append_features():
-    df = pd.read_csv('1b/svm/data/restaurant_info.csv')
+    df = pd.read_csv('1c/data/restaurant_info.csv')
 
     df['foodquality'] = np.random.choice(['good', 'normal'], size=len(df))
     df['crowdedness'] = np.random.choice(['busy', 'normal'], size=len(df))
     df['lengthofstay'] = np.random.choice(['short', 'long'], size=len(df))
 
-    df.to_csv('1b/svm/data/restaurant_info_extra.csv')
+    df.to_csv('1c/data/restaurant_info_extra.csv')
 
 
 def extract_additional_req(sentence):

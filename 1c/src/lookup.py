@@ -12,7 +12,7 @@ def lookup_restaurant(pricerange=None, area=None, food=None, foodquality=None, c
     crowdedness = filter_any(crowdedness)
     lengthofstay = filter_any(lengthofstay)
 
-    df = pd.read_csv('1b/svm/data/restaurant_info_extra.csv')
+    df = pd.read_csv('1c/data/restaurant_info_extra.csv')
     results = df
 
     if pricerange:
