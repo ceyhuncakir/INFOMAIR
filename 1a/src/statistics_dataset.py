@@ -126,8 +126,8 @@ class Statistics(Base):
 
 @statistics_app.command()
 def run(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether to deduplicate the dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=)] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether to deduplicate the dataset.", callback=)] = None,
 ) -> None:
 
     Statistics(

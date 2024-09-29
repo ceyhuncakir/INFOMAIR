@@ -10,6 +10,7 @@ from typing_extensions import Annotated
 from loguru import logger
 import pickle
 
+from helpers.callbacks import *
 from helpers.base import Base
 
 vectorizer_app = typer.Typer()
@@ -111,9 +112,9 @@ class Vectorizer(Base):
 
 @vectorizer_app.command()
 def build(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    vectorizer_type: Annotated[str, typer.Option(help="The vectorizer we want to use to train it based on our data.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the vectorizer will be saved.")] = None
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = os.getcwd() + "/1a/data/dialog_acts.dat",
+    vectorizer_type: Annotated[str, typer.Option(help="The vectorizer we want to use to train it based on our data.", callback=vectorizer_value)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the vectorizer will be saved.", callback=path_valid)] = os.getcwd() + "/1a/data/vectorizer"
 ) -> None:
 
     Vectorizer(
