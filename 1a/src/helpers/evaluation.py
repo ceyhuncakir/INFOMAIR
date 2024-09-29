@@ -43,11 +43,11 @@ class Evaluate:
         Returns:
             None
         """
-        
+
         return classification_report(
             y_true, 
             y_pred, 
-            target_names=self._labels, 
+            labels=self._labels,
             zero_division=0
         )
     

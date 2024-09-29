@@ -331,6 +331,8 @@ class MultiLayerPerceptron(Base):
                 y_true.extend(labels.cpu().tolist())
 
         df = pd.concat([pd.Series(y_true, name='y_true'), pd.Series(y_preds, name='y_pred')], axis=1)
+        df['y_true'] = df['y_true'].apply(lambda x: self._labels[x])
+        df['y_pred'] = df['y_pred'].apply(lambda x: self._labels[x])
 
         return df
 
