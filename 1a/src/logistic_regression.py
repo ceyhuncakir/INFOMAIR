@@ -11,6 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 
+from helpers.callbacks import *
 from helpers.base import Base
 from helpers.evaluation import Evaluate
 
@@ -275,11 +276,11 @@ class LogisticRegressionClassifier(Base):
 
 @logisticreg_app.command()
 def evaluate(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable xgboost model will be saved in.")] = None,
-    experiment_name: Annotated[str, typer.Option(help="The experiment name of the xgboost model that will be saved as.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = None,
+    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable xgboost model will be saved in.", callback=path_valid)] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name of the xgboost model that will be saved as.", callback=experiment_value)] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.", callback=deduplication_value)] = None,
 ) -> None:
 
     LogisticRegressionClassifier(
@@ -292,11 +293,11 @@ def evaluate(
 
 @logisticreg_app.command()
 def inference(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.")] = None,
-    experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = None,
+    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.", callback=path_valid)] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.", callback=experiment_value)] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.", callback=deduplication_value)] = None,
 ) -> None:
     
     logisticregression = LogisticRegressionClassifier(
@@ -317,13 +318,13 @@ def inference(
 
 @logisticreg_app.command()
 def train(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.")] = None,
-    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.")] = None,
-    experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = None,
+    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.", callback=path_valid)] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.", callback=experiment_value)] = None,
     max_iter: Annotated[int, typer.Option(help="The maximum number of iterations to be run.")] = 100,
     verbose: Annotated[bool, typer.Option(help="Whether to print out logs.")] = False,
-    deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.", callback=deduplication_value)] = False,
 ) -> None:
     
     LogisticRegressionClassifier(

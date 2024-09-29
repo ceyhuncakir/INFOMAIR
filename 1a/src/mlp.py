@@ -20,6 +20,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from helpers.callbacks import *
 from helpers.base import Base
 from helpers.evaluation import Evaluate
 
@@ -528,12 +529,12 @@ class MultiLayerPerceptron(Base):
 
 @mlp_app.command()
 def inference(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
-    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
-    device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.", callback=path_valid)] = None,
+    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp", callback=path_valid)] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use", callback=experiment_value)] = None,
+    device: Annotated[str, typer.Option(help="The device you want to use.")] = "cpu",
+    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = False,
 ) -> None:
 
     mlp = MultiLayerPerceptron(
@@ -555,12 +556,12 @@ def inference(
 
 @mlp_app.command()
 def evaluate(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
-    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
-    device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.", callback=path_valid)] = None,
+    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp", callback=path_valid)] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use", callback=experiment_value)] = None,
+    device: Annotated[str, typer.Option(help="The device you want to use.")] = "cpu",
+    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = False,
 ) -> None:
     
     MultiLayerPerceptron(
@@ -574,15 +575,15 @@ def evaluate(
 
 @mlp_app.command()
 def train(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
-    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.")] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp")] = None,
-    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use")] = None,
-    device: Annotated[str, typer.Option(help="The device you want to use.")] = None,
-    eta: Annotated[float, typer.Option(help="The learning rate you want to use.")] = None,
-    batch_size: Annotated[int, typer.Option(help="The amount of batch size you want to set the dataloaders for")] = None,
-    epochs: Annotated[int, typer.Option(help="The amount of epochs you want to run the mlp for.")] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.", callback=path_valid)] = None,
+    vectorizer_dir_path: Annotated[str, typer.Option(help="The vectorizer directory path where the trained vectorizer model resides in.", callback=path_valid)] = None,
+    checkpoint_dir_path: Annotated[str, typer.Option(help="Checkpoint directory path for the mlp", callback=path_valid)] = None,
+    experiment_name: Annotated[str, typer.Option(help="The experiment name you want to use", callback=experiment_value)] = None,
+    device: Annotated[str, typer.Option(help="The device you want to use.")] = "cpu",
+    eta: Annotated[float, typer.Option(help="The learning rate you want to use.")] = 1e-2,
+    batch_size: Annotated[int, typer.Option(help="The amount of batch size you want to set the dataloaders for")] = 64,
+    epochs: Annotated[int, typer.Option(help="The amount of epochs you want to run the mlp for.")] = 10,
+    deduplication: Annotated[bool, typer.Option(help="Whether the mlp model should be trained on deduplicated data from dialog acts dataset.")] = False,
 ) -> None:
     
     MultiLayerPerceptron(

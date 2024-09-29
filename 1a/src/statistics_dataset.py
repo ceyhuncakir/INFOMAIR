@@ -5,6 +5,7 @@ from typing_extensions import Annotated
 import math
 
 from helpers.base import Base
+from helpers.callbacks import *
 
 statistics_app = typer.Typer()
 
@@ -126,8 +127,8 @@ class Statistics(Base):
 
 @statistics_app.command()
 def run(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=)] = None,
-    deduplication: Annotated[bool, typer.Option(help="Whether to deduplicate the dataset.", callback=)] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = os.getcwd() + "/1a/data/dialog_acts.dat",
+    deduplication: Annotated[bool, typer.Option(help="Whether to deduplicate the dataset.", callback=deduplication_value)] = False,
 ) -> None:
 
     Statistics(
