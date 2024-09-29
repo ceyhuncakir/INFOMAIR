@@ -5,8 +5,9 @@ from custom_sentences import create_custom_sentence
 import joblib
 import os
 from collections import defaultdict
+import numpy as np
+import pandas as pd
 
-# To do: touristic kan niet romanian zijn
 # To do: contradicting rules vergelijken
 
 if __name__ == "__main__":
@@ -18,17 +19,21 @@ if __name__ == "__main__":
 
         preferences = {'area': None, 'food': None, 'pricerange': None}
         additional_requirements = defaultdict(dict)
+        
         req_idx = 0
         state = 2
 
     if not os.path.isfile('1b/svm/data/restaurant_info_extra.csv'):
         append_features()
 
+    df = pd.read_csv('1b/svm/data/restaurant_info_extra.csv')
+
     vectorizer = joblib.load(os.path.join('1b/svm/models', 'tfidf_vectorizer.pkl'))
     classifier = joblib.load(os.path.join('1b/svm/models', 'svm_classifier.pkl'))
 
     preferences = {'area': None, 'food': None, 'pricerange': None}
     additional_requirements = defaultdict(dict)
+    exclusion_list = []
 
     req_idx = 0
     state = 1
@@ -44,7 +49,7 @@ if __name__ == "__main__":
         identified_keywords = identify_keywords(user_input, state)
         preferences.update({k: v for k, v in identified_keywords.items() if v})
 
-        results = lookup_restaurant(**preferences)
+        results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
 
         #
         # Ending conversation
@@ -99,19 +104,21 @@ if __name__ == "__main__":
                 found_reqs = extract_additional_req(user_input)
                 if found_reqs:
                     for keyword, requirement in found_reqs:
+                        if keyword == 'touristic' and preferences['food'] != 'romanian':
+                            exclusion_list.append('romanian')# If 'touristic' is a requirement and user is not specifically looking for romanian food, exclude this from the recommendations
                         for key, value in requirement.items():
                             if key in preferences and preferences[key] != value and preferences[key] != 'any': # Check for contradictions between requirements and previous preferences
                                 print(f"system: Although you were initially looking for something {preferences[key]}, I changed this to {value} because you want something {keyword}.")
                             additional_requirements[keyword][key] = value
                             preferences[key] = value # If a contradiction occurs, overwrite the first value with the latter value. I.e., requirements overwrite preferences
-                    results = lookup_restaurant(**preferences)
+                    results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
                     if results.empty:
                         state = 7
                     else:
                         state = 6
 
         #
-        # Parsing restaurant after all preferences are given
+        # All preferences are given
         #
 
         elif all(preferences.values()):
@@ -153,7 +160,7 @@ if __name__ == "__main__":
             print("system: Would you like something in the cheap, moderate, or expensive price range?")
 
         elif state == 5:
-            print(f"system: So you are looking for {preferences['food']} food in {preferences['area']} area and in {preferences['pricerange']} pricerange?")
+            print(f"system: So you are looking for {preferences['food']} food in {preferences['area']} area and in the {preferences['pricerange']} pricerange?")
 
         elif state == 20:
             print("system: Do you have additional requirements?")

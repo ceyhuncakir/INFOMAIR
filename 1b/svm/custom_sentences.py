@@ -10,7 +10,7 @@ def create_custom_sentence(input_dict):
             elif attribute == "foodquality":
                 description = f"the food quality is {value}"
             elif attribute == "crowdedness":
-                description = "it is not crowded" if value == "normal" else f"usually quite {value}"
+                description = "it is not crowded" if value == "normal" else f"is it usually quite busy"
             elif attribute == "lengthofstay":
                 description = f"you can stay for a {value} time"
             values.append(description)
