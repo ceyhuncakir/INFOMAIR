@@ -84,7 +84,6 @@ class Base:
 
         df['act'] = df['act'].str.lower()
         df['utterance'] = df['utterance'].str.lower()
-        df['utterance'] = df['utterance'].str.lstrip()
         
         if deduplication:
             # dropping duplicates
@@ -131,7 +130,7 @@ class Base:
         """
         
         train, test = train_test_split(
-            df[['act', 'utterance']], 
+            df, 
             train_size=0.85, 
             random_state=42           
         )

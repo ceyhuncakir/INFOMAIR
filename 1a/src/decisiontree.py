@@ -75,14 +75,13 @@ class DecisionTree(Base):
             DecisionTreeClassifier: The trained decision tree classifier model.
         """
 
-        labels_train = train['y_true'].values
+        labels_train = [self._labels.index(act) for act in train['y_true']]
 
         clf = DecisionTreeClassifier(
             criterion="gini", 
             max_depth=max_depth, 
             min_samples_split=min_samples_split, 
-            min_samples_leaf=min_samples_leaf,
-            class_weight=self._class_weight_dict
+            min_samples_leaf=min_samples_leaf
         )    
 
         clf = clf.fit(self._train_sparse_matrix, labels_train)
@@ -192,7 +191,7 @@ class DecisionTree(Base):
         """
         
         y_pred = model.predict(self._test_sparse_matrix)
-        test["y_pred"] = y_pred
+        test["y_pred"] = [self._labels[i] for i in y_pred]
 
         return test
 

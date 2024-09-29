@@ -74,13 +74,12 @@ class LogisticRegressionClassifier(Base):
             LogisticRegression: The trained logistic regression model.
         """
 
-        labels_train = train['y_true'].values
+        labels_train = [self._labels.index(act) for act in train['y_true']]
 
         clf = LogisticRegression(
             max_iter=max_iter,
             verbose=verbose,
-            class_weight=self._class_weight_dict
-        )    
+        ) 
 
         clf = clf.fit(self._train_sparse_matrix, labels_train)
 
@@ -189,7 +188,7 @@ class LogisticRegressionClassifier(Base):
         """
 
         y_pred = model.predict(self._test_sparse_matrix)
-        test["y_pred"] = y_pred
+        test["y_pred"] = [self._labels[i] for i in y_pred]
 
         return test
 
@@ -222,9 +221,6 @@ class LogisticRegressionClassifier(Base):
 
         # Find the index of the class with the highest probability
         index_array = np.argmax(y_preds_proba, axis=-1)
-
-        print(index_array)
-        print(self._labels)
 
         # Get the predicted class label
         categorical_pred = self._labels[index_array[0]]
