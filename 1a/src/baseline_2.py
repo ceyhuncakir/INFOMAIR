@@ -25,7 +25,6 @@ class Baseline_2(Base):
     ) -> None: 
         
         self._dataset_dir_path = dataset_dir_path
-        self._deduplication = deduplication
         _, self.test, self.labels, self.majority = self.process(
             deduplication=False
         )
@@ -87,13 +86,9 @@ class Baseline_2(Base):
         Returns:
             pd.DataFrame: A dataframe containing the dataset information which we have gathered with the new information.
         """
-        
-        df['y_true'] = df['act'].apply(
-            lambda x: labels.index(x)
-        )
 
         df['y_pred'] = df['utterance'].apply(
-            lambda x: labels.index(self._rule_based(x))
+            lambda x: self._rule_based(x)
         )
 
         return df

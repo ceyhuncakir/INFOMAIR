@@ -127,7 +127,7 @@ class Statistics(Base):
 
 @statistics_app.command()
 def run(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = os.getcwd() + "/1a/data/dialog_acts.dat",
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = os.getcwd() + "/data/dialog_acts.dat",
     deduplication: Annotated[bool, typer.Option(help="Whether to deduplicate the dataset.", callback=deduplication_value)] = False,
 ) -> None:
 

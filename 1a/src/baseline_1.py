@@ -63,8 +63,7 @@ class Baseline_1(Base):
             pd.DataFrame: A dataframe consiting of data with the new predictions from the model.
         """
 
-        df['y_true'] = df['act'].apply(lambda x: labels.index(x))
-        df['y_pred'] = labels.index(majority)
+        df['y_pred'] = majority
         return df
 
     def inference(

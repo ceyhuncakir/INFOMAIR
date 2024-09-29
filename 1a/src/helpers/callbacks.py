@@ -28,3 +28,23 @@ def experiment_value(value: str) -> str:
     if value == None:
         raise typer.BadParameter(f"You need to specify the experiment name.")
     return value
+
+def device_value(value: str) -> str:
+
+    values = ["cpu", "cuda"]
+
+    if value not in values:
+        raise typer.BadParameter(f"{value} does not meet the criteria: {values}")
+    return value
+
+def float_value(value: float) -> float:
+
+    if not isinstance(value, float):
+        raise typer.BadParameter(f"{value} is not a float.")
+    return value
+    
+def int_value(value: int) -> int:
+
+    if not isinstance(value, int):
+        raise typer.BadParameter(f"{value} is not an integer.")
+    return value
