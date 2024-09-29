@@ -1,9 +1,11 @@
+import os
 from typing import Tuple, List
 
 import pandas as pd
 import typer
 from typing_extensions import Annotated
 
+from helpers.callbacks import *
 from helpers.base import Base
 from helpers.evaluation import Evaluate
 
@@ -110,7 +112,7 @@ class Baseline_1(Base):
 
 @baseline_1_app.command()
 def inference(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.", callback=path_valid)] = os.getcwd() + "/data/dialog_acts.dat",
 ) -> None:
     """
     This function is needed to run the main inference process.
@@ -134,7 +136,7 @@ def inference(
 
 @baseline_1_app.command()
 def evaluate(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.")] = None,
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset dir path we want to specify for the dataset.", callback=path_valid)] = os.getcwd() + "/data/dialog_acts.dat",
 ) -> None:
     """
     This function is needed to run the main evaluation process.
