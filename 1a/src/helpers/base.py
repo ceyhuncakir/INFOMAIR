@@ -3,6 +3,8 @@ from typing import Tuple, List
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from loguru import logger
+from sklearn.utils.class_weight import compute_class_weight
+import numpy as np
 
 from helpers.evaluation import Evaluate
 
@@ -131,7 +133,7 @@ class Base:
         train, test = train_test_split(
             df[['act', 'utterance']], 
             train_size=0.85, 
-            random_state=42            
+            random_state=42           
         )
 
         return train, test
@@ -163,6 +165,15 @@ class Base:
         df = self.set_columns(df=df)
         df = self._preprocess(df=df, deduplication=deduplication)
 
+        class_weights = compute_class_weight(
+            class_weight="balanced", 
+            classes=df['act'].unique(),  # Ensure unique() is called here
+            y=df['act']
+        )
+
+        df['act'] = df['act'].astype('category')    
+        class_weight_dict = dict(zip(df['act'].cat.categories, class_weights))
+
         majority = self._get_majority_class(df=df)
 
         labels = self._get_labels(df=df)
@@ -172,4 +183,4 @@ class Base:
         train["y_true"] = train['act']
         test["y_true"] = test['act']
 
-        return train, test, labels, majority
+        return train, test, labels, majority, class_weight_dict

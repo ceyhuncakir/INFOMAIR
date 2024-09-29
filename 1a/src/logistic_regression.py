@@ -44,7 +44,7 @@ class LogisticRegressionClassifier(Base):
         self._experiment_name = experiment_name
         self._deduplication = deduplication
         
-        self._train, self._test, self._labels, self._majority = self.process(
+        self._train, self._test, self._labels, self._majority, self._class_weight_dict = self.process(
             deduplication=deduplication
         )
 
@@ -78,7 +78,8 @@ class LogisticRegressionClassifier(Base):
 
         clf = LogisticRegression(
             max_iter=max_iter,
-            verbose=verbose
+            verbose=verbose,
+            class_weight=self._class_weight_dict
         )    
 
         clf = clf.fit(self._train_sparse_matrix, labels_train)
@@ -207,19 +208,32 @@ class LogisticRegressionClassifier(Base):
             str: The predicted dialogue act.
         """
 
+        # Load the trained logistic regression model
         logisticregression = self._load_model()
 
-        utterance = utterance.lower().lstrip()
+        # Preprocess the utterance (e.g., remove leading spaces)
+        utterance = utterance.lstrip()
 
+        # Transform the utterance using the vectorizer to create a sparse matrix
         sparse_matrix = self._vectorizer.transform([utterance])
 
+        # Get the predicted probabilities for each class
         y_preds_proba = logisticregression.predict_proba(sparse_matrix)
 
+        # Find the index of the class with the highest probability
         index_array = np.argmax(y_preds_proba, axis=-1)
 
+        print(index_array)
+        print(self._labels)
+
+        # Get the predicted class label
         categorical_pred = self._labels[index_array[0]]
 
-        return categorical_pred, y_preds_proba[0][index_array]
+        # Get the probability for the predicted class
+        predicted_proba = y_preds_proba[0][index_array[0]]
+
+        # Return the predicted class label and the corresponding probability
+        return categorical_pred, predicted_proba
 
     @logger.catch
     def evaluate(

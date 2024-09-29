@@ -36,7 +36,7 @@ class Vectorizer(Base):
         self._vectorizer_type = vectorizer_type
         self._checkpoint_dir_path = checkpoint_dir_path
 
-        self._train, self._test, _, _ = self.process(
+        self._train, self._test, _, _, _ = self.process(
             deduplication=False
         )
 
@@ -112,9 +112,9 @@ class Vectorizer(Base):
 
 @vectorizer_app.command()
 def build(
-    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = os.getcwd() + "/1a/data/dialog_acts.dat",
+    dataset_dir_path: Annotated[str, typer.Option(help="The dataset directory path where the original dialog acts dataset resides in.", callback=path_valid)] = os.getcwd() + "/data/dialog_acts.dat",
     vectorizer_type: Annotated[str, typer.Option(help="The vectorizer we want to use to train it based on our data.", callback=vectorizer_value)] = None,
-    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the vectorizer will be saved.", callback=path_valid)] = os.getcwd() + "/1a/data/vectorizer"
+    checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the vectorizer will be saved.", callback=path_valid)] = os.getcwd() + "/data/vectorizer"
 ) -> None:
 
     Vectorizer(

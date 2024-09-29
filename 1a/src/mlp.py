@@ -105,7 +105,7 @@ class MultiLayerPerceptron(Base):
         self._device = device
         self._deduplication = deduplication
 
-        self._train, self._test, self._labels, self._majority = self.process(
+        self._train, self._test, self._labels, self._majority, _ = self.process(
             deduplication=deduplication
         )
         

@@ -43,7 +43,7 @@ class DecisionTree(Base):
         self._checkpoint_dir_path = checkpoint_dir_path
         self._experiment_name = experiment_name
 
-        self._train, self._test, self._labels, self._majority = self.process(
+        self._train, self._test, self._labels, self._majority, self._class_weight_dict = self.process(
             deduplication=deduplication
         )
 
@@ -81,7 +81,8 @@ class DecisionTree(Base):
             criterion="gini", 
             max_depth=max_depth, 
             min_samples_split=min_samples_split, 
-            min_samples_leaf=min_samples_leaf
+            min_samples_leaf=min_samples_leaf,
+            class_weight=self._class_weight_dict
         )    
 
         clf = clf.fit(self._train_sparse_matrix, labels_train)
