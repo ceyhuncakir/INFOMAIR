@@ -6,12 +6,21 @@ import joblib
 import os
 from collections import defaultdict
 
-# To do: allow for 'any' area, food and pricerange
-# To do: confirm alterations afmaken
 # To do: touristic kan niet romanian zijn
 # To do: contradicting rules vergelijken
 
 if __name__ == "__main__":
+    
+    def restart():
+        global preferences, additional_requirements, req_idx, state
+
+        print("system: Okay, let's try again")
+
+        preferences = {'area': None, 'food': None, 'pricerange': None}
+        additional_requirements = defaultdict(dict)
+        req_idx = 0
+        state = 2
+
     if not os.path.isfile('1b/svm/data/restaurant_info_extra.csv'):
         append_features()
 
@@ -32,7 +41,7 @@ if __name__ == "__main__":
         dialog_act = classifier.predict(vec_input)[0]
         print(f"dialog act: {dialog_act}")
 
-        identified_keywords = identify_keywords(user_input)
+        identified_keywords = identify_keywords(user_input, state)
         preferences.update({k: v for k, v in identified_keywords.items() if v})
 
         results = lookup_restaurant(**preferences)
@@ -48,18 +57,58 @@ if __name__ == "__main__":
         # Restarting conversation
         #
 
-        if dialog_act == 'restart':
-            preferences = {'area': None, 'food': None, 'pricerange': None}
-            additional_requirements = defaultdict(dict)
-            req_idx = 0
-            state = 1
+        elif dialog_act == 'restart':
+            restart()
 
         #
         # No restaurants found
         #
 
-        if results.empty:
+        elif results.empty:
             state = 7
+
+        #
+        # Handling alteration requests
+        # 
+        
+        elif state == 8:
+            if dialog_act in ['deny', 'negate']:
+                restart()
+            elif dialog_act in ['affirm']:
+                req_idx = 0
+                state = 20
+
+        #
+        # Confirm 'dontcare' values
+        # 
+        
+        elif state == 5:
+            if dialog_act in ['deny', 'negate']:
+                restart()
+            elif dialog_act in ['affirm']:
+                state = 20
+        
+        #
+        # Collecting additional requirements
+        #     
+
+        elif state == 20:
+            if dialog_act in ['deny', 'negate']:  # User does not give additional requirements
+                state = 6
+            else:
+                found_reqs = extract_additional_req(user_input)
+                if found_reqs:
+                    for keyword, requirement in found_reqs:
+                        for key, value in requirement.items():
+                            if key in preferences and preferences[key] != value and preferences[key] != 'any': # Check for contradictions between requirements and previous preferences
+                                print(f"system: Although you were initially looking for something {preferences[key]}, I changed this to {value} because you want something {keyword}.")
+                            additional_requirements[keyword][key] = value
+                            preferences[key] = value # If a contradiction occurs, overwrite the first value with the latter value. I.e., requirements overwrite preferences
+                    results = lookup_restaurant(**preferences)
+                    if results.empty:
+                        state = 7
+                    else:
+                        state = 6
 
         #
         # Parsing restaurant after all preferences are given
@@ -69,7 +118,7 @@ if __name__ == "__main__":
             if dialog_act == 'reqmore' and len(results.index) > 1:
                 req_idx += 1
                 state = 6
-            elif preferences['food'] == 'any' or preferences['pricerange'] == 'any':
+            elif any(preferences.get(key) == 'any' for key in ['food', 'pricerange', 'area']):
                 state = 5
             elif dialog_act == 'reqalts': 
                 state = 8
@@ -89,38 +138,6 @@ if __name__ == "__main__":
                 state = 3
             elif preferences['pricerange'] is None:
                 state = 4
-        
-        #
-        # Collecting additional requirements
-        #     
-
-        if state == 20:
-            if dialog_act in ['deny', 'negate']:  # User does not give additional requirements
-                state = 6
-            else:
-                found_reqs = extract_additional_req(user_input)
-                if found_reqs:
-                    for keyword, requirement in found_reqs:
-                        for key, value in requirement.items():
-                            if key in preferences and preferences[key] != value and preferences[key] != 'any': # Check for contradictions between requirements and previous preferences
-                                print(f"system: Although you were initially looking for something {preferences[key]}, I changed this to {value} because you want something {keyword}.")
-                            additional_requirements[keyword][key] = value
-                            preferences[key] = value # If a contradiction occurs, overwrite the first value with the latter value. I.e., requirements overwrite preferences
-                    results = lookup_restaurant(**preferences)
-                    if results.empty:
-                        state = 7
-                    else:
-                        state = 6
-
-        #
-        # Handling alteration requests
-        # 
-        
-        if state == 8:
-            if dialog_act in ['deny', 'negate']:
-                state = 6 # nog afmaken
-            elif dialog_act in ['affirm']:
-                state = 6
                             
         #
         # Print statements
@@ -128,30 +145,41 @@ if __name__ == "__main__":
         
         if state == 2:
             print("system: What part of town do you have in mind?")
+
         elif state == 3:
             print("system: What kind of food would you like?")
+
         elif state == 4:
             print("system: Would you like something in the cheap, moderate, or expensive price range?")
+
         elif state == 5:
-            print("CONFIRM DONTCARE VALUES")
+            print(f"system: So you are looking for {preferences['food']} food in {preferences['area']} area and in {preferences['pricerange']} pricerange?")
+
         elif state == 20:
             print("system: Do you have additional requirements?")
+
         elif state == 6:
-            restaurant = results.iloc[req_idx]['restaurantname']
-            food = results.iloc[req_idx]['food']
-            pricerange = results.iloc[req_idx]['pricerange']
-            phone = results.iloc[req_idx]['phone']
-            address = results.iloc[req_idx]['addr']
+            if results.empty:
+                state = 7
+            else:
+                restaurant = results.iloc[req_idx]['restaurantname']
+                food = results.iloc[req_idx]['food']
+                pricerange = results.iloc[req_idx]['pricerange']
+                phone = results.iloc[req_idx]['phone']
+                address = results.iloc[req_idx]['addr']
             
-            print(f"system: {restaurant} is a great choice serving {food} food in the {pricerange} price range.")
+                print(f"system: {restaurant} is a great choice serving {food} food in the {pricerange} price range.")
             
-            if any(additional_requirements.values()):
-                print(create_custom_sentence(additional_requirements))
+                if any(additional_requirements.values()):
+                    print(create_custom_sentence(additional_requirements))
+
         elif state == 7:
             print(f"system: I'm sorry but there is no restaurant serving {preferences['food']} food that meets your preferences")
             print(f"preferences: {preferences}")
+
         elif state == 8:
             print(f"system: You are looking for a {preferences['food']} restaurant right?")
+
         elif state == 9:
             if 'phone' in user_input:
                 print(f'The phone number of {restaurant} is {phone}')
@@ -159,6 +187,7 @@ if __name__ == "__main__":
                 print(f'Sure, {restaurant} is on {address}') 
             else:
                 print('system: Do you want to know their address or phone number?') 
+
         elif state == 10:
             break   
         

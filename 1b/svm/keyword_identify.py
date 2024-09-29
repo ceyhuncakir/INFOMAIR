@@ -1,10 +1,16 @@
 import pandas as pd
 from Levenshtein import distance
 
-def identify_keywords(sentence):
+def identify_keywords(sentence, state):
     df = pd.read_csv('1b/svm/data/restaurant_info_extra.csv')
 
     common_words = ['I', 'the', 'an', 'in', 'is', 'for', 'can', 'have', 'am', 'need', 'want', 'what', 'that', 'this', 'their', 'its', 'yes', 'no', 'eat', 'else']
+    any_conditions = {
+        'food': ['any food'],
+        'area': ['anywhere', 'any place', 'any area'],
+        'pricerange': ['any price', 'any pricerange'],
+        'general': ['any', 'anything', 'dont care', 'doesnt matter', 'you choose']
+    }
 
     keyword_dict = {
     'pricerange': df['pricerange'].dropna().astype(str).unique(), 
@@ -14,7 +20,25 @@ def identify_keywords(sentence):
 
     words = sentence.lower().split()
     keywords_found = {}
-    min_distance = {}
+    min_distance = {} 
+
+    for attribute, phrases in any_conditions.items(): # hanle more specific 'dont care' values that can be given anytime. E.g., "anywhere"
+        if attribute == 'general':
+            continue
+        for phrase in phrases:
+            if phrase in sentence.lower():
+                keywords_found[attribute] = 'any'
+                break
+
+    for phrase in any_conditions['general']: # handle 'dontcare' value per state. E.g., if user input includes 'any' when asked for food in state 3. Assume user is referring to food.
+        if phrase in sentence.lower():
+            if state == 2:
+                return {'area': 'any'}
+            elif state == 3:
+                return {'food': 'any'}
+            elif state == 4:
+                return {'pricerange': 'any'}
+            break
 
     for n in range(1, 3): # scan for keyword phrases consisting of one or two words. Some keyword phrases consists of two words, such as 'asian oriental'
         for i in range(len(words) - n + 1):
