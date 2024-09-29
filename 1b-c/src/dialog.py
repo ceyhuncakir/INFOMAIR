@@ -28,15 +28,15 @@ if __name__ == "__main__":
         req_idx = 0
         state = 2
 
-    if not os.path.isfile('1b-c/data/restaurant_info_extra.csv'):
+    if not os.path.isfile('data/restaurant_info_extra.csv'):
         append_features()
 
-    df = pd.read_csv('1b-c/data/restaurant_info_extra.csv')
+    df = pd.read_csv('data/restaurant_info_extra.csv')
 
     classifier = LogisticRegressionClassifier(
-        dataset_dir_path="1b-c/data/dialog_acts.dat",
-        vectorizer_dir_path="1a/data/vectorizer/tfidf_vectorizer.pkl",
-        checkpoint_dir_path="1a/data/logistic_regression",
+        dataset_dir_path="data/dialog_acts.dat",
+        vectorizer_dir_path="data/vectorizer/tfidf_vectorizer.pkl",
+        checkpoint_dir_path="data/logistic_regression",
         experiment_name="logistic-regression-deduplicated-tfidf-vectorizer",
         deduplication=True
     )
