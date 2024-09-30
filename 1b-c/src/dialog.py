@@ -14,20 +14,23 @@ import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../1a/src')))
 
 from logistic_regression import LogisticRegressionClassifier
+from baseline_2 import Baseline_2
 
 dialog_manager_app = typer.Typer()
 
-def dialog_manager(do_delay, levenshtein_dist, do_continious_results):      
-
+def dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseline):      
     if not os.path.isfile('data/restaurant_info_extra.csv'):
         append_features() # Create new csv file with three extra attributes: foodquality, crowdedness, lengthofstay
 
-    classifier = LogisticRegressionClassifier(
-        dataset_dir_path="data/dialog_acts.dat",
-        vectorizer_dir_path="data/vectorizer/tfidf_vectorizer.pkl",
-        checkpoint_dir_path="data/logistic_regression",
-        experiment_name="logistic-regression-deduplicated-tfidf-vectorizer",
-        deduplication=True
+    if use_baseline:
+        classifier = Baseline_2(dataset_dir_path="data/dialog_acts.dat")  # Configurability option: use baseline classifier instead of logistic regression
+    else:
+        classifier = LogisticRegressionClassifier(
+            dataset_dir_path="data/dialog_acts.dat",
+            vectorizer_dir_path="data/vectorizer/tfidf_vectorizer.pkl",
+            checkpoint_dir_path="data/logistic_regression",
+            experiment_name="logistic-regression-deduplicated-tfidf-vectorizer",
+            deduplication=True
     )
 
     preferences = {'area': None, 'food': None, 'pricerange': None}
@@ -47,8 +50,6 @@ def dialog_manager(do_delay, levenshtein_dist, do_continious_results):
         
         if do_delay:
             time.sleep(3) # Configurability option: add a delay before every system response
-
-        print(f"dialog act: {dialog_act}")
 
         identified_keywords = identify_keywords(user_input, state, levenshtein_dist)
         preferences.update({k: v for k, v in identified_keywords.items() if v})
@@ -229,7 +230,7 @@ def dialog_manager(do_delay, levenshtein_dist, do_continious_results):
                     print(create_custom_sentence(additional_requirements))
 
         elif state == 7:
-            print(f"system: I'm sorry but there is no restaurant serving {preferences['food']} food that meets your preferences")
+            print(f"system: I'm sorry but there is no restaurant serving {preferences['food']} food that meets your preferences.")
             print(f"preferences: {preferences}")
 
         elif state == 8:
@@ -244,14 +245,16 @@ def dialog_manager(do_delay, levenshtein_dist, do_continious_results):
                 print('system: Do you want to know their address or phone number?') 
         
         elif state == 11:
-            print("system: Okay, let's try again")
+            print("system: Okay, let's try again.")
 
         elif state == 10:
+            print("system: Goodbye.")
             break 
 
 @dialog_manager_app.command()
 def run(do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
         levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
-        do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False):
+        do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False,
+        use_baseline: Annotated[bool, typer.Option("--use-baseline")] = False):
 
-    dialog_manager(do_delay, levenshtein_dist, do_continious_results)
+    dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseline)
