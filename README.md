@@ -203,22 +203,12 @@ python 1b-c/src/main.py dialog_manager run
 ```
 You can add the following configurability arguments:
 
-### Add 3 second delay before every system utterance
-```
---do-delay
-```
-### Disable or change levenshtein edit distance
-```
---levenshtein_dist [int]
-```
-### Enable continious results. Shows remainig results after every user utterance
-```
---do-continious-results
-```
-### Ase keyword baseline as a classifier, instead of linear regression
-```
---use-baseline
-```
+| Parameter | Type | Default value | Description                                       |
+| --------- | ---- | ------------- | ------------------------------------------------- |
+| `--do-delay`  | bool  | False         | Add 3 second delay before every system utterance             |
+| `--levenshtein_dist [int]l` | 3  | rest          | Disable or change levenshtein edit distance                              |
+| `--do-continious-results` | False  | 0             | Enable continuous results. Shows remainig results after every user utterance |
+| `--use-baseline` | bool  | False             | Use keyword baseline as a classifier, instead of linear regression |
 
 
 # Contributors
