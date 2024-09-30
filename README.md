@@ -97,7 +97,15 @@ INFOMAIR/
 This is just one example. Always ensure you use the correct paths when running commands.
 
 # Usage
-Before actually using the act classifiers you should note that for the machine learning models you first need to train the models in order to do any real predictions on the test set. For inference this is the same case. Before using any machine learning model, the dataset must first be vectorized using a chosen vectorizer. It is recommended to fit the vectorizer before applying it to the model. To build your own vectorizer, you can run the following pipenv command.
+Before actually using the act classifiers you should note that for the machine learning models you first need to train the models in order to do any real predictions on the test set. For inference this is the same case. Before using any machine learning model, the dataset must first be vectorized using a chosen vectorizer. It is recommended to fit the vectorizer before applying it to the model. To build your own vectorizer, you can run the following pipenv command. The example commands are not necessary due to having default values set for each command, but for specific usage please refer to the example commands that have been defined in each section.
+
+
+# statistics
+To get some statistics from the **dialog_acts.dat** dataset you can use the following pipenv command:
+```
+pipenv run 1a statistics run --dataset-dir-path [DIALOG DATASET PATH] --deduplication [DEDUPLICATION FLAG]
+```
+
 
 # 1A
 ## Baseline's
