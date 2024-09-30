@@ -17,7 +17,7 @@ from logistic_regression import LogisticRegressionClassifier
 
 dialog_manager_app = typer.Typer()
 
-def dialog_manager(do_delay, levenshtein_dist):      
+def dialog_manager(do_delay, levenshtein_dist, do_continious_results):      
 
     if not os.path.isfile('data/restaurant_info_extra.csv'):
         append_features() # Create new csv file with three extra attributes: foodquality, crowdedness, lengthofstay
@@ -55,6 +55,20 @@ def dialog_manager(do_delay, levenshtein_dist):
 
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
 
+        if do_continious_results:
+            if len(results) > 1:
+                print("system: So far, these are some of the restaurants that meet your preferences:\n")
+                print(f"{'Name':<50} {'Food':<25} {'Price':<25} {'Area':<25}")
+                print("-" * 125)
+                count = 0
+                for name, food, price, area in zip(results['restaurantname'], results['food'], results['pricerange'], results['area']):
+                    if count < 10:
+                        print(f"{name:<50} {food:<25} {price:<25} {area:<25}")  # Configurability option: continiously print remaining results
+                        count += 1
+                    else:
+                        break
+                print("-" * 125)
+
         #
         # Resetting conversation
         #
@@ -77,7 +91,6 @@ def dialog_manager(do_delay, levenshtein_dist):
         #
 
         elif dialog_act == 'restart':
-            restart()
             state = 11
 
         #
@@ -238,6 +251,7 @@ def dialog_manager(do_delay, levenshtein_dist):
 
 @dialog_manager_app.command()
 def run(do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
-        levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3):
+        levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
+        do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False):
 
-    dialog_manager(do_delay, levenshtein_dist)
+    dialog_manager(do_delay, levenshtein_dist, do_continious_results)
