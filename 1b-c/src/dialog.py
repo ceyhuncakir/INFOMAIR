@@ -16,11 +16,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../1
 from logistic_regression import LogisticRegressionClassifier
 
 # To do: contradicting rules vergelijken
-# To do: Phone address fixen
 
 dialog_manager_app = typer.Typer()
 
-def dialog_manager(do_delay = True):
+def dialog_manager(do_delay, levenshtein_dist):
     
     def restart():
         global preferences, additional_requirements, req_idx, state
@@ -62,7 +61,7 @@ def dialog_manager(do_delay = True):
 
         print(f"dialog act: {dialog_act}")
 
-        identified_keywords = identify_keywords(user_input, state)
+        identified_keywords = identify_keywords(user_input, state, levenshtein_dist)
         preferences.update({k: v for k, v in identified_keywords.items() if v})
 
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
@@ -89,10 +88,27 @@ def dialog_manager(do_delay = True):
             state = 7
 
         #
+        # Requesting more restaurants
+        #
+
+        elif dialog_act == 'reqmore' and all(preferences.values()) and len(results.index) > 1:
+                req_idx += 1
+                state = 6
+
+        #
+        # Proviing phone number, address
+        #
+
+        elif dialog_act == 'request' and all(preferences.values()):
+                state = 9
+
+        #
         # Handling alteration requests
-        # 
-        
-        elif state == 8:
+        #
+
+        elif dialog_act == 'reqalts' and all(preferences.values()):
+            state = 8
+
             if dialog_act in ['deny', 'negate']:
                 restart()
             elif dialog_act in ['affirm']:
@@ -100,10 +116,20 @@ def dialog_manager(do_delay = True):
                 state = 20
 
         #
+        # All preferences are given
+        #
+
+        elif state == 6:
+            if any(preferences.get(key) == 'any' for key in ['food', 'pricerange', 'area']):
+                state = 5
+            else:
+                continue
+
+        #
         # Confirm 'dontcare' values
         # 
         
-        elif state == 5:
+        elif state == 5 and any(preferences.get(key) == 'any' for key in ['food', 'pricerange', 'area']):
             if dialog_act in ['deny', 'negate']:
                 restart()
             elif dialog_act in ['affirm']:
@@ -132,23 +158,6 @@ def dialog_manager(do_delay = True):
                         state = 7
                     else:
                         state = 6
-
-        #
-        # All preferences are given
-        #
-
-        elif all(preferences.values()):
-            if dialog_act == 'reqmore' and len(results.index) > 1:
-                req_idx += 1
-                state = 6
-            elif any(preferences.get(key) == 'any' for key in ['food', 'pricerange', 'area']):
-                state = 5
-            elif dialog_act == 'reqalts': 
-                state = 8
-            elif dialog_act == 'request':
-                state = 9
-            else:
-                state = 20
         
         #
         # Collecting preferences
@@ -161,6 +170,8 @@ def dialog_manager(do_delay = True):
                 state = 3
             elif preferences['pricerange'] is None:
                 state = 4
+            else:
+                state = 5
                             
         #
         # Print statements
@@ -215,6 +226,7 @@ def dialog_manager(do_delay = True):
             break 
 
 @dialog_manager_app.command()
-def run(do_delay: Annotated[bool, typer.Option("--do-delay")] = False):
+def run(do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
+        levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3):
 
-    dialog_manager(do_delay)
+    dialog_manager(do_delay, levenshtein_dist)
