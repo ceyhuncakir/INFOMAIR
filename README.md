@@ -208,7 +208,7 @@ You can add the following configurability arguments:
 | --------- | ---- | ------------- | ------------------------------------------------- |
 | `--do-delay`  | bool  | False   | Add 3 second delay before every system utterance  |
 | `--levenshtein_dist [int]` | int  | 3 | Disable or change levenshtein edit distance  |
-| `--do-continious-results` | bool  | False  | Enable continuous results. Shows remainig results after every user utterance |
+| `--do-continuous-results` | bool  | False  | Enable continuous results. Shows remainig results after every user utterance |
 | `--use-baseline` | bool  | False | Use keyword baseline as a classifier, instead of linear regression |
 
 # Contributors
