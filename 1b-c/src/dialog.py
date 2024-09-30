@@ -271,10 +271,10 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results:
 
 @dialog_manager_app.command()
 def run(
-    do_delay: Annotated[bool, typer.Option(help="whether to add delay between the user and system response", "--do-delay")] = False,
-    levenshtein_dist: Annotated[int, typer.Option(help="defining the levenshtein distance", "--levenshtein_dist")] = 3,
-    do_continious_results: Annotated[bool, typer.Option(help="whether to have continous results", "--do-continious-results")] = False,
-    use_baseline: Annotated[bool, typer.Option(help="whether to use the baseline or not.", "--use-baseline")] = False
+    do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
+    levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
+    do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False,
+    use_baseline: Annotated[bool, typer.Option("--use-baseline")] = False
 ) -> None:
 
     dialog_manager(
