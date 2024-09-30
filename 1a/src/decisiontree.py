@@ -8,9 +8,10 @@ import numpy as np
 import typer
 from typing_extensions import Annotated
 from loguru import logger
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
+import matplotlib.pyplot as plt
 
 from helpers.callbacks import *
 from helpers.base import Base
@@ -85,6 +86,13 @@ class DecisionTree(Base):
         )    
 
         clf = clf.fit(self._train_sparse_matrix, labels_train)
+
+        feature_names = self._vectorizer.get_feature_names_out()
+        
+        os.makedirs(exist_ok=True, name=f"{self._checkpoint_dir_path}/{self._experiment_name}")
+        plt.figure(figsize=(10,8))  # Adjust the figure size as needed
+        plot_tree(clf, filled=True, feature_names=feature_names, class_names=self._train['y_true'].unique().tolist())
+        plt.savefig(f"{self._checkpoint_dir_path}/{self._experiment_name}/decision_tree.png", dpi=600, bbox_inches='tight')  # Save as PNG
 
         return clf
 
@@ -329,8 +337,8 @@ def train(
     checkpoint_dir_path: Annotated[str, typer.Option(help="The checkpoint directory path where the trainable decisiontree model will be saved in.", callback=path_valid)] = os.getcwd() + "/data/decisiontree",
     experiment_name: Annotated[str, typer.Option(help="The experiment name of the decisiontree model that will be saved as.", callback=experiment_value)] = "decisiontree-tfidf-dupe",
     max_depth: Annotated[int, typer.Option(help="The max depth of the decision tree model.")] = 5,
-    min_samples_split: Annotated[int, typer.Option(help="The minimum amount of samples per split.")] = 5,
-    min_samples_leaf: Annotated[int, typer.Option(help="The minimum amount of samples per leaf")] = 100,
+    min_samples_split: Annotated[int, typer.Option(help="The minimum amount of samples per split.")] = 10,
+    min_samples_leaf: Annotated[int, typer.Option(help="The minimum amount of samples per leaf")] = 10,
     deduplication: Annotated[bool, typer.Option(help="Whether the decisiontree model should be trained on deduplicated data from dialog acts dataset.", callback=deduplication_value)] = False,
 ) -> None:
     
