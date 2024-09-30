@@ -2,23 +2,25 @@ from keyword_identify import identify_keywords
 from lookup import lookup_restaurant
 from additional_requirements import append_features, extract_additional_req
 from custom_sentences import create_custom_sentence
-import joblib
+from typing_extensions import Annotated
 import os
 from collections import defaultdict
 import numpy as np
 import pandas as pd
 import sys
 import typer
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../1a/src')))
 
 from logistic_regression import LogisticRegressionClassifier
 
 # To do: contradicting rules vergelijken
+# To do: Phone address fixen
 
 dialog_manager_app = typer.Typer()
 
-def dialog_manager():
+def dialog_manager(do_delay = True):
     
     def restart():
         global preferences, additional_requirements, req_idx, state
@@ -33,8 +35,6 @@ def dialog_manager():
 
     if not os.path.isfile('data/restaurant_info_extra.csv'):
         append_features()
-
-    df = pd.read_csv('data/restaurant_info_extra.csv')
 
     classifier = LogisticRegressionClassifier(
         dataset_dir_path="data/dialog_acts.dat",
@@ -55,9 +55,11 @@ def dialog_manager():
     
     while True:
         user_input = input('user: ')
-
-        #vec_input = vectorizer.transform([user_input])
         dialog_act = classifier.inference(user_input.lower())[0]
+        
+        if do_delay:
+            time.sleep(3)
+
         print(f"dialog act: {dialog_act}")
 
         identified_keywords = identify_keywords(user_input, state)
@@ -213,8 +215,6 @@ def dialog_manager():
             break 
 
 @dialog_manager_app.command()
-# add argument
-def run():
+def run(do_delay: Annotated[bool, typer.Option("--do-delay")] = False):
 
-    # add argument
-    dialog_manager()
+    dialog_manager(do_delay)
