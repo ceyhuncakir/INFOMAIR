@@ -21,16 +21,15 @@ dialog_manager_app = typer.Typer()
 def dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseline):      
     if not os.path.isfile('data/restaurant_info_extra.csv'):
         append_features() # Create new csv file with three extra attributes: foodquality, crowdedness, lengthofstay
-
-    if use_baseline:
-        classifier = Baseline_2(dataset_dir_path="data/dialog_acts.dat")  # Configurability option: use baseline classifier instead of logistic regression
-    else:
-        classifier = LogisticRegressionClassifier(
-            dataset_dir_path="data/dialog_acts.dat",
-            vectorizer_dir_path="data/vectorizer/tfidf_vectorizer.pkl",
-            checkpoint_dir_path="data/logistic_regression",
-            experiment_name="logistic-regression-deduplicated-tfidf-vectorizer",
-            deduplication=True
+    
+    classifier_baseline = Baseline_2(dataset_dir_path="data/dialog_acts.dat")
+   
+    classifier_lg = LogisticRegressionClassifier(
+        dataset_dir_path="data/dialog_acts.dat",
+        vectorizer_dir_path="data/vectorizer/tfidf_vectorizer.pkl",
+        checkpoint_dir_path="data/logistic_regression",
+        experiment_name="logisticregression-tfidf-dupe",
+        deduplication=True
     )
 
     preferences = {'area': None, 'food': None, 'pricerange': None}
@@ -46,7 +45,11 @@ def dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseli
     
     while True:
         user_input = input('user: ')
-        dialog_act = classifier.inference(user_input.lower())[0]
+
+        if use_baseline:
+            dialog_act = classifier_baseline.inference(user_input.lower()) # Configurability option: use baseline classifier instead of logistic regression
+        else:
+            dialog_act = classifier_lg.inference(user_input.lower())[0]
         
         if do_delay:
             time.sleep(3) # Configurability option: add a delay before every system response
@@ -55,6 +58,7 @@ def dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseli
         preferences.update({k: v for k, v in identified_keywords.items() if v})
 
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
+        print(dialog_act)
 
         if do_continious_results:
             if len(results) > 1:
