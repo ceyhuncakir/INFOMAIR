@@ -18,7 +18,21 @@ from baseline_2 import Baseline_2
 
 dialog_manager_app = typer.Typer()
 
-def dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseline):      
+def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results: bool, use_baseline: bool) -> None:    
+
+    """
+    This function is needed to run the main dialog manager process.
+
+    Args:
+        do_delay (bool): A boolean flag to add a delay before every system response
+        levenshtein_dist (int): An integer defining the levenshtein distance
+        do_continious_results (bool): A boolean flag to continiously print remaining results
+        use_baseline (bool): A boolean flag to use the baseline classifier instead of logistic regression
+
+    Returns:
+        None
+    """
+
     if not os.path.isfile('data/restaurant_info_extra.csv'):
         append_features() # Create new csv file with three extra attributes: foodquality, crowdedness, lengthofstay
     
@@ -256,9 +270,16 @@ def dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseli
             break 
 
 @dialog_manager_app.command()
-def run(do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
-        levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
-        do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False,
-        use_baseline: Annotated[bool, typer.Option("--use-baseline")] = False):
+def run(
+    do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
+    levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
+    do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False,
+    use_baseline: Annotated[bool, typer.Option("--use-baseline")] = False
+) -> None:
 
-    dialog_manager(do_delay, levenshtein_dist, do_continious_results, use_baseline)
+    dialog_manager(
+        do_delay=do_delay, 
+        levenshtein_dist=levenshtein_dist, 
+        do_continious_results=do_continious_results, 
+        use_baseline=use_baseline
+    )
