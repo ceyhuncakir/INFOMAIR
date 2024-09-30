@@ -15,25 +15,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../1
 
 from logistic_regression import LogisticRegressionClassifier
 
-# To do: contradicting rules vergelijken
-
 dialog_manager_app = typer.Typer()
 
-def dialog_manager(do_delay, levenshtein_dist):
-    
-    def restart():
-        global preferences, additional_requirements, req_idx, state
-
-        print("system: Okay, let's try again")
-
-        preferences = {'area': None, 'food': None, 'pricerange': None}
-        additional_requirements = defaultdict(dict)
-        
-        req_idx = 0
-        state = 2
+def dialog_manager(do_delay, levenshtein_dist):      
 
     if not os.path.isfile('data/restaurant_info_extra.csv'):
-        append_features()
+        append_features() # Create new csv file with three extra attributes: foodquality, crowdedness, lengthofstay
 
     classifier = LogisticRegressionClassifier(
         dataset_dir_path="data/dialog_acts.dat",
@@ -44,10 +31,12 @@ def dialog_manager(do_delay, levenshtein_dist):
     )
 
     preferences = {'area': None, 'food': None, 'pricerange': None}
-    additional_requirements = defaultdict(dict)
-    exclusion_list = []
+    additional_requirements = defaultdict(dict) 
+    exclusion_list = [] # Foodtypes excluded from the results (e.g., Romanian when requirement is touristic)
 
-    req_idx = 0
+    reqmore_keywords = ['more', 'other'] # Keyword matching for the 'reqmore' dialog act
+
+    req_idx = 0 # Keep track of last recommended restaurant. Goes up when user asks for next restaurant recommendation within the same preferences.
     state = 1
 
     print("system: Hello, welcome to the Cambridge restaurant system! You can ask for restaurants by area, price range, or food type. How may I help you?")
@@ -57,7 +46,7 @@ def dialog_manager(do_delay, levenshtein_dist):
         dialog_act = classifier.inference(user_input.lower())[0]
         
         if do_delay:
-            time.sleep(3)
+            time.sleep(3) # Configurability option: add a delay before every system response
 
         print(f"dialog act: {dialog_act}")
 
@@ -67,10 +56,20 @@ def dialog_manager(do_delay, levenshtein_dist):
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
 
         #
+        # Resetting conversation
+        #
+
+        if state == 11:
+            preferences = {'area': None, 'food': None, 'pricerange': None}
+            additional_requirements = defaultdict(dict)
+        
+            req_idx = 0
+            state = 2
+        #
         # Ending conversation
         #
 
-        if dialog_act == 'bye':
+        elif dialog_act == 'bye':
             state = 10
 
         #
@@ -79,6 +78,7 @@ def dialog_manager(do_delay, levenshtein_dist):
 
         elif dialog_act == 'restart':
             restart()
+            state = 11
 
         #
         # No restaurants found
@@ -91,12 +91,18 @@ def dialog_manager(do_delay, levenshtein_dist):
         # Requesting more restaurants
         #
 
-        elif dialog_act == 'reqmore' and all(preferences.values()) and len(results.index) > 1:
+        elif any(phrase in reqmore_keywords for phrase in user_input.lower().split()) and all(preferences.values()): # Perform keyword matching for the 'reqmore' dialog act. Regular classifier fails to recognize this class.
+            if(len(results) > 1):
+                dialog_act = 'reqmore'
                 req_idx += 1
-                state = 6
+    
+                if req_idx >= len(results): # If there are no more results, reset the index to 0.
+                    req_idx = 0 
+                    print("system: Sorry, there are no more restaurants that meet your preferences.")
+                    state = 6
 
         #
-        # Proviing phone number, address
+        # Providing phone number, address
         #
 
         elif dialog_act == 'request' and all(preferences.values()):
@@ -110,10 +116,10 @@ def dialog_manager(do_delay, levenshtein_dist):
             state = 8
 
             if dialog_act in ['deny', 'negate']:
-                restart()
+                state = 11
             elif dialog_act in ['affirm']:
-                req_idx = 0
-                state = 20
+                req_idx = 0 # Reset request index after changing preference.
+                state = 12
 
         #
         # All preferences are given
@@ -129,17 +135,17 @@ def dialog_manager(do_delay, levenshtein_dist):
         # Confirm 'dontcare' values
         # 
         
-        elif state == 5 and any(preferences.get(key) == 'any' for key in ['food', 'pricerange', 'area']):
+        elif state == 5:
             if dialog_act in ['deny', 'negate']:
-                restart()
+                state = 11
             elif dialog_act in ['affirm']:
-                state = 20
+                state = 12
         
         #
         # Collecting additional requirements
         #     
 
-        elif state == 20:
+        elif state == 12:
             if dialog_act in ['deny', 'negate']:  # User does not give additional requirements
                 state = 6
             else:
@@ -189,13 +195,15 @@ def dialog_manager(do_delay, levenshtein_dist):
         elif state == 5:
             print(f"system: So you are looking for {preferences['food']} food in {preferences['area']} area and in the {preferences['pricerange']} pricerange?")
 
-        elif state == 20:
+        elif state == 12:
             print("system: Do you have additional requirements?")
 
         elif state == 6:
             if results.empty:
                 state = 7
             else:
+                if req_idx >= len(results): # Reset req index to 0 to prevent running out of boundaries after changing a preference
+                    req_idx = 0
                 restaurant = results.iloc[req_idx]['restaurantname']
                 food = results.iloc[req_idx]['food']
                 pricerange = results.iloc[req_idx]['pricerange']
@@ -221,6 +229,9 @@ def dialog_manager(do_delay, levenshtein_dist):
                 print(f'Sure, {restaurant} is on {address}') 
             else:
                 print('system: Do you want to know their address or phone number?') 
+        
+        elif state == 11:
+            print("system: Okay, let's try again")
 
         elif state == 10:
             break 
