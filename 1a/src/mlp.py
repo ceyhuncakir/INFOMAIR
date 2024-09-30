@@ -72,7 +72,7 @@ class MLPDataset(Dataset):
         idx: int
     ) -> Tuple[torch.Tensor, torch.Tensor]:
 
-        sparse_matrix, label = self._df.iloc[idx, 3], self._df.loc[idx, 'y_true']
+        sparse_matrix, label = self._df.iloc[idx, 4], self._df.loc[idx, 'y_true']
 
         y_true_label = self._labels.index(label)
 
@@ -328,9 +328,7 @@ class MultiLayerPerceptron(Base):
 
                 output = model(inputs)
 
-                pred_proba = F.softmax(output, dim=1)
-
-                preds = torch.argmax(pred_proba, dim=1)
+                preds = torch.argmax(output, dim=1)
 
                 y_preds.extend(preds.cpu().tolist())
                 y_true.extend(labels.cpu().tolist())
@@ -469,7 +467,7 @@ class MultiLayerPerceptron(Base):
 
             output = model(sparse_matrix_tensor)
 
-            pred_proba = F.softmax(output, dim=1)
+            preds = torch.argmax(output, dim=1)
 
             index_array = np.argmax(pred_proba.cpu().numpy())    
 
