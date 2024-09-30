@@ -27,6 +27,14 @@ from helpers.evaluation import Evaluate
 mlp_app = typer.Typer()
 
 class MLP(nn.Module):
+    """
+    This class is meant to define the mlp model.
+
+    Attributes:
+        feature_shape (int): An integer defining the feature shape.
+        num_classes (int): An integer defining the number of classes.
+    """
+
     def __init__(
         self,
         feature_shape: int,
@@ -48,11 +56,27 @@ class MLP(nn.Module):
         self, 
         x
     ) -> torch.Tensor:
+        """
+        This function is needed to define the forward pass of the model.
+
+        Args:
+            x: A tensor defining the input.
+        
+        Returns:
+            torch.Tensor: A tensor defining the output.
+        """
         
         x = self.model(x)
         return x
 
 class MLPDataset(Dataset):
+
+    """
+    This class is meant to house in the functionalities needed to create a dataset for the mlp model.
+
+    Attributes: 
+        df (pd.DataFrame): A pandas dataframe consisting of the data.
+    """
     def __init__(
         self, 
         df: pd.DataFrame
@@ -64,6 +88,15 @@ class MLPDataset(Dataset):
     def __len__(
         self
     ) -> int:
+        """
+        This function is needed to return the length of the dataset.
+
+        Args:
+            None
+
+        Returns:
+            int: The length of the dataset.
+        """
 
         return self._df.shape[0]
 
@@ -71,6 +104,15 @@ class MLPDataset(Dataset):
         self, 
         idx: int
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        This function is needed to return the item at the given index.
+
+        Args:
+            idx (int): An integer defining the index.
+        
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: A tuple consisting of the inputs and the labels.
+        """
 
         sparse_matrix, label = self._df.iloc[idx, 4], self._df.loc[idx, 'y_true']
 
@@ -84,9 +126,12 @@ class MultiLayerPerceptron(Base):
     This class is meant to house in the functionalities needed to train a mlp model.
 
     Attributes:
-        dataset_dir_path (str): The dataset directory path defining where the dialog_acts data is stored.
-        checkpoint_dir_path (str): The checkpoint directory path needed to save the mlp model.
-        device (str): A string defining the device
+        dataset_dir_path (str): A string defining the dataset directory path.
+        vectorizer_dir_path (str): A string defining the vectorizer directory path.
+        checkpoint_dir_path (str): A string defining the checkpoint directory path.
+        experiment_name (str): A string defining the experiment name.
+        device (str): A string defining the device.
+        deduplication (bool): A boolean defining whether the model should be trained on deduplicated data.
     """
     def __init__(
         self,
@@ -135,8 +180,11 @@ class MultiLayerPerceptron(Base):
         This function is needed to train the MLP model.
 
         Args:
-            train_set (pd.DataFrame): A pandas dataframe consisting of the train set.
+            train_set (pd.DataFrame): A pandas dataframe consisting of the training set.
             val_set (pd.DataFrame): A pandas dataframe consisting of the validation set.
+            eta (float): A float defining the learning rate.
+            batch_size (int): An integer defining the batch size.
+            epochs (int): An integer defining the number of epochs.
 
         Returns:
             MLP: The mlp model.
@@ -171,12 +219,17 @@ class MultiLayerPerceptron(Base):
 
                 # feed forward
                 output = model(inputs)
-                
+            
+                # calculate loss
                 loss = loss_fn(output, labels)
 
+                # zero the gradients
                 optimizer.zero_grad()
 
+                # backpropagation
                 loss.backward()
+
+                # update the weights
                 optimizer.step()
 
                 running_train_loss += loss.item() * inputs.size(0)
@@ -404,7 +457,7 @@ class MultiLayerPerceptron(Base):
     @logger.catch
     def _load_model(
         self
-    ) -> None:
+    ) -> MLP:
         """
         This function is needed to load in the trained MLP model.
 

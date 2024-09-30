@@ -25,6 +25,7 @@ class DecisionTree(Base):
 
     Attributes:
         dataset_dir_path (str): The dataset directory path where the original dialog acts dataset resides in.
+        vectorizer_dir_path (str): The vectorizer directory path where the trained vectorizer model resides in.
         checkpoint_dir_path (str): The checkpoint directory path where the trainable decision tree will be saved in.
         experiment_name (str): The experiment name of the decision tree that will be saved as.
         deduplication (bool): Whether the decision tree should be trained on deduplicated data from dialog acts dataset.
@@ -215,7 +216,7 @@ class DecisionTree(Base):
             utterance (str): The utterance that will be used to make predictions.
         
         Returns:
-            str: The predicted dialog
+            str: The predicted act
         """
 
         decisiontree = self._load_model()
