@@ -193,7 +193,8 @@ pipenv run 1a mlp inference --dataset-dir-path [DATASET DIRECTORY PATH] --vector
 # 1B - 1C
 ## Logistic Regression based dialogue
 
-To use the Logistic Regression based dialogue manager, run the following command:
+Before running the dialog manager, make sure that there is a trained Logistic Regression classifier in the `data` directory.
+Then. to use the Logistic Regression based dialogue manager, run the following command:
 ```
  pipenv run 1b-c dialog_manager 
 ```
@@ -205,11 +206,10 @@ You can add the following configurability arguments:
 
 | Parameter | Type | Default value | Description                                       |
 | --------- | ---- | ------------- | ------------------------------------------------- |
-| `--do-delay`  | bool  | False         | Add 3 second delay before every system utterance             |
-| `--levenshtein_dist [int]l` | 3  | rest          | Disable or change levenshtein edit distance                              |
-| `--do-continious-results` | False  | 0             | Enable continuous results. Shows remainig results after every user utterance |
-| `--use-baseline` | bool  | False             | Use keyword baseline as a classifier, instead of linear regression |
-
+| `--do-delay`  | bool  | False   | Add 3 second delay before every system utterance  |
+| `--levenshtein_dist [int]` | 3  | rest | Disable or change levenshtein edit distance  |
+| `--do-continious-results` | False  | 0  | Enable continuous results. Shows remainig results after every user utterance |
+| `--use-baseline` | bool  | False | Use keyword baseline as a classifier, instead of linear regression |
 
 # Contributors
 ```
