@@ -18,7 +18,7 @@ from baseline_2 import Baseline_2
 
 dialog_manager_app = typer.Typer()
 
-def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results: bool, use_baseline: bool) -> None:    
+def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continuous_results: bool, use_baseline: bool) -> None:    
 
     """
     This function is needed to run the main dialog manager process.
@@ -26,7 +26,7 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results:
     Args:
         do_delay (bool): A boolean flag to add a delay before every system response
         levenshtein_dist (int): An integer defining the levenshtein distance
-        do_continious_results (bool): A boolean flag to continiously print remaining results
+        do_continuous_results (bool): A boolean flag to continuously print remaining results
         use_baseline (bool): A boolean flag to use the baseline classifier instead of logistic regression
 
     Returns:
@@ -74,7 +74,7 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results:
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
         print(dialog_act)
 
-        if do_continious_results:
+        if do_continuous_results:
             if len(results) > 1:
                 print("system: So far, these are some of the restaurants that meet your preferences:\n")
                 print(f"{'Name':<50} {'Food':<25} {'Price':<25} {'Area':<25}")
@@ -82,7 +82,7 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results:
                 count = 0
                 for name, food, price, area in zip(results['restaurantname'], results['food'], results['pricerange'], results['area']):
                     if count < 10:
-                        print(f"{name:<50} {food:<25} {price:<25} {area:<25}")  # Configurability option: continiously print remaining results
+                        print(f"{name:<50} {food:<25} {price:<25} {area:<25}")  # Configurability option: continuously print remaining results
                         count += 1
                     else:
                         break
@@ -273,13 +273,13 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continious_results:
 def run(
     do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
     levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
-    do_continious_results: Annotated[bool, typer.Option("--do-continious-results")] = False,
+    do_continuous_results: Annotated[bool, typer.Option("--do-continuous-results")] = False,
     use_baseline: Annotated[bool, typer.Option("--use-baseline")] = False
 ) -> None:
 
     dialog_manager(
         do_delay=do_delay, 
         levenshtein_dist=levenshtein_dist, 
-        do_continious_results=do_continious_results, 
+        do_continuous_results=do_continuous_results, 
         use_baseline=use_baseline
     )
