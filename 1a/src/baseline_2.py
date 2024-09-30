@@ -25,7 +25,7 @@ class Baseline_2(Base):
     ) -> None: 
         
         self._dataset_dir_path = dataset_dir_path
-        _, self.test, self.labels, self.majority = self.process(
+        _, self.test, self.labels, self.majority, _ = self.process(
             deduplication=False
         )
 
