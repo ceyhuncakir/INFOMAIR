@@ -1,6 +1,7 @@
 from keyword_identify import identify_keywords
 from lookup import lookup_restaurant
 from additional_requirements import append_features, extract_additional_req
+from continuous_results import print_results
 from custom_sentences import create_custom_sentence
 from typing_extensions import Annotated
 import os
@@ -72,21 +73,9 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continuous_results:
         preferences.update({k: v for k, v in identified_keywords.items() if v})
 
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
-        print(dialog_act)
 
         if do_continuous_results:
-            if len(results) > 1:
-                print("system: So far, these are some of the restaurants that meet your preferences:\n")
-                print(f"{'Name':<50} {'Food':<25} {'Price':<25} {'Area':<25}")
-                print("-" * 125)
-                count = 0
-                for name, food, price, area in zip(results['restaurantname'], results['food'], results['pricerange'], results['area']):
-                    if count < 10:
-                        print(f"{name:<50} {food:<25} {price:<25} {area:<25}")  # Configurability option: continuously print remaining results
-                        count += 1
-                    else:
-                        break
-                print("-" * 125)
+            print_results(results) # Configurability option: continuously print remaining results
 
         #
         # Resetting conversation
@@ -272,7 +261,7 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continuous_results:
 @dialog_manager_app.command()
 def run(
     do_delay: Annotated[bool, typer.Option("--do-delay")] = False,
-    levenshtein_dist: Annotated[int, typer.Option("--levenshtein_dist")] = 3,
+    levenshtein_dist: Annotated[int, typer.Option("--levenshtein-dist")] = 3,
     do_continuous_results: Annotated[bool, typer.Option("--do-continuous-results")] = False,
     use_baseline: Annotated[bool, typer.Option("--use-baseline")] = False
 ) -> None:
