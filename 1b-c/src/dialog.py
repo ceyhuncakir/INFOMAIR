@@ -68,11 +68,13 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continuous_results:
         
         if do_delay:
             time.sleep(3) # Configurability option: add a delay before every system response
-
-        identified_keywords = identify_keywords(user_input, state, levenshtein_dist)
-        preferences.update({k: v for k, v in identified_keywords.items() if v})
+        
+        if any(value is None for value in preferences.values()):
+            identified_keywords = identify_keywords(user_input, state, levenshtein_dist)
+            preferences.update({k: v for k, v in identified_keywords.items() if v})
 
         results = lookup_restaurant(**preferences, exclusion_list=exclusion_list)
+        print(dialog_act)
 
         if do_continuous_results:
             print_results(results) # Configurability option: continuously print remaining results
@@ -102,6 +104,22 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continuous_results:
             state = 11
 
         #
+        # Handling alteration requests
+        #
+
+        elif dialog_act == 'reqalts' and all(preferences.values()):
+            identified_keywords = identify_keywords(user_input, state, levenshtein_dist)
+            preferences.update({k: v for k, v in identified_keywords.items() if v})
+
+            state = 8
+
+            if dialog_act in ['deny', 'negate']:
+                state = 11
+            elif dialog_act in ['affirm']:
+                req_idx = 0 # Reset request index after changing preference.
+                state = 12
+
+        #
         # No restaurants found
         #
 
@@ -128,19 +146,6 @@ def dialog_manager(do_delay: bool, levenshtein_dist: int, do_continuous_results:
 
         elif dialog_act == 'request' and all(preferences.values()):
                 state = 9
-
-        #
-        # Handling alteration requests
-        #
-
-        elif dialog_act == 'reqalts' and all(preferences.values()):
-            state = 8
-
-            if dialog_act in ['deny', 'negate']:
-                state = 11
-            elif dialog_act in ['affirm']:
-                req_idx = 0 # Reset request index after changing preference.
-                state = 12
 
         #
         # All preferences are given
